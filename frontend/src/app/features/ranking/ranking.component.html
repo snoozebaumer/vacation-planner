@@ -1,0 +1,222 @@
+<div class="page">
+  <header class="top-bar">
+    <span class="top-bar-side"></span>
+    <h1>{{ ranking()?.vacation?.name ?? ('common.ranking' | translate) }}</h1>
+    <div class="top-bar-side top-bar-actions">
+      @if (userId) {
+        <button
+          mat-icon-button
+          [title]="'ranking.adjustPrioritiesTitle' | translate"
+          (click)="adjustPriorities()"
+        >
+          <mat-icon>tune</mat-icon>
+        </button>
+        <button mat-stroked-button color="primary" (click)="keepRanking()">
+          <mat-icon>sports_kabaddi</mat-icon>
+          {{ 'ranking.keepRankingButton' | translate }}
+        </button>
+      }
+    </div>
+  </header>
+
+  <div class="content">
+  @if (notice()) {
+    <div class="notice-banner">
+      <span>{{ notice() }}</span>
+      <button type="button" class="notice-dismiss" (click)="dismissNotice()" aria-label="Dismiss">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  }
+
+  @if (vetoMessage()) {
+    <p class="export-message error">{{ vetoMessage() }}</p>
+  }
+
+  @if (loading()) {
+    <div class="center-fill">
+      <mat-spinner></mat-spinner>
+    </div>
+  } @else if (errorMessage()) {
+    <p class="error">{{ errorMessage() }}</p>
+  } @else if (ranking(); as ranking) {
+    <p class="budget-note">
+      {{
+        'ranking.budgetNote'
+          | translate
+            : {
+                days: ranking.vacation.durationDays,
+                hours: ranking.vacation.activeHoursPerDay,
+                budget: ranking.vacation.budgetHours.toFixed(1),
+                travel: ranking.vacation.avgTravelTimeHours
+              }
+      }}
+    </p>
+
+    <button mat-stroked-button color="primary" class="export-btn" (click)="exportMyMaps()" [disabled]="exporting()">
+      <mat-icon>download</mat-icon>
+      {{ (exporting() ? 'ranking.exportingButton' : 'ranking.exportButton') | translate }}
+    </button>
+    @if (exportMessage()) {
+      <p class="export-message">{{ exportMessage() }}</p>
+    }
+
+    @if (ranking.buckets.length === 0) {
+      <p class="empty-note">{{ 'ranking.noBucketsYet' | translate }}</p>
+    }
+
+    @for (bucket of ranking.buckets; track bucket.bucketId) {
+      <section class="bucket-section">
+        <div class="bucket-header">
+          <h2 class="section-title">{{ bucketName(bucket) }}</h2>
+          @if (bucket.bucketKey === 'uncategorized') {
+            <button
+              mat-stroked-button
+              class="retry-btn"
+              [disabled]="retryingUncategorized()"
+              (click)="retryUncategorized()"
+            >
+              <mat-icon>refresh</mat-icon>
+              {{ (retryingUncategorized() ? 'ranking.retryingButton' : 'ranking.retryButton') | translate }}
+            </button>
+          } @else {
+            <span class="bucket-budget">
+              {{ 'ranking.bucketBudget' | translate: { budget: bucket.budgetHours.toFixed(1) } }}
+              @if (bucket.budgetAdjustments.length > 0) {
+                <span class="budget-info" tabindex="0">
+                  <mat-icon class="info-icon">info</mat-icon>
+                  <span class="budget-tooltip">
+                    <span class="adj-note">{{ budgetNoteKey(bucket) | translate }}</span>
+                    @for (adj of bucket.budgetAdjustments; track adj.otherBucketId) {
+                      <span class="adj-line" [class.positive]="adj.hours > 0" [class.negative]="adj.hours < 0">
+                        {{ adj.hours > 0 ? '+' : '' }}{{ adj.hours.toFixed(1) }}h {{ adjustmentBucketName(adj) }}
+                      </span>
+                    }
+                    <details class="adj-explainer">
+                      <summary>{{ 'ranking.budgetExplainerTitle' | translate }}</summary>
+                      <p class="adj-explainer-body">{{ 'ranking.budgetExplainerBody' | translate }}</p>
+                    </details>
+                  </span>
+                </span>
+              }
+            </span>
+          }
+        </div>
+        @if (bucket.bucketKey === 'uncategorized') {
+          <p class="uncategorized-note">{{ 'ranking.uncategorizedNote' | translate }}</p>
+        }
+        @if (retryMessage()) {
+          <p class="error">{{ retryMessage() }}</p>
+        }
+
+        <ol class="rank-list">
+          @for (place of bucket.places; track place.id; let i = $index) {
+            <li class="rank-row" [class.below-cutoff]="place.fitsInBudget === false">
+              <span class="rank-number">{{ place.rank }}</span>
+
+              @if (place.photo_url) {
+                <img class="thumb" [src]="place.photo_url" [alt]="place.name" referrerpolicy="no-referrer" />
+              } @else {
+                <div class="thumb placeholder">{{ place.name.charAt(0) }}</div>
+              }
+
+              <div class="place-info">
+                <span class="place-name">{{ place.name }}</span>
+                @if (place.description) {
+                  <span class="place-description">{{ place.description }}</span>
+                }
+                @if (place.favoritesOf.length > 0 || place.vetoedBy.length > 0) {
+                  <div class="badges">
+                    @for (badge of place.favoritesOf; track badge.userId) {
+                      <span class="badge favorite-badge">{{ badge.icon }} {{ badge.userName }}</span>
+                    }
+                    @for (v of place.vetoedBy; track v.userId) {
+                      <span class="badge veto-badge">{{ 'ranking.vetoBadge' | translate: { name: v.userName } }}</span>
+                    }
+                  </div>
+                }
+              </div>
+
+              @if (place.estimated_hours != null) {
+                <span class="place-hours">{{ place.estimated_hours | number: '1.0-1' }}h</span>
+              }
+
+              @if (userId) {
+                @if (ranking.myVeto?.placeId === place.id) {
+                  <button
+                    mat-icon-button
+                    class="veto-btn active"
+                    [disabled]="vetoBusy()"
+                    [title]="'ranking.removeVetoTitle' | translate"
+                    (click)="unveto()"
+                  >
+                    <mat-icon>push_pin</mat-icon>
+                  </button>
+                } @else if (!ranking.myVeto) {
+                  <button
+                    mat-icon-button
+                    class="veto-btn"
+                    [disabled]="vetoBusy()"
+                    [title]="'ranking.vetoTitle' | translate"
+                    (click)="veto(place.id)"
+                  >
+                    <mat-icon>push_pin</mat-icon>
+                  </button>
+                }
+              }
+            </li>
+
+            @if (bucket.cutoffIndex === i + 1) {
+              <li class="cutoff-line">
+                <span>{{ 'ranking.cutoffLine' | translate }}</span>
+              </li>
+            }
+          }
+        </ol>
+      </section>
+    }
+
+    @if (ranking.userRankings.length > 0) {
+      <h2 class="section-title">{{ 'ranking.personalRankings' | translate }}</h2>
+      <mat-accordion class="user-rankings">
+        @for (ur of ranking.userRankings; track ur.userId) {
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>{{ ur.userName }}</mat-panel-title>
+              <mat-panel-description>
+                {{
+                  (ur.matchCount === 1 ? 'ranking.voteCastOne' : 'ranking.voteCastOther')
+                    | translate: { count: ur.matchCount }
+                }}
+              </mat-panel-description>
+            </mat-expansion-panel-header>
+
+            @if (ur.buckets.length === 0) {
+              <p class="empty-note">{{ 'ranking.noPlacesYet' | translate }}</p>
+            } @else {
+              @for (b of ur.buckets; track b.bucketId) {
+                <h3 class="nested-bucket-title">{{ bucketName(b) }}</h3>
+                <ol class="rank-list nested">
+                  @for (place of b.places; track place.id) {
+                    <li class="rank-row">
+                      <span class="rank-number">{{ place.rank }}</span>
+                      @if (place.photo_url) {
+                        <img class="thumb" [src]="place.photo_url" [alt]="place.name" referrerpolicy="no-referrer" />
+                      } @else {
+                        <div class="thumb placeholder">{{ place.name.charAt(0) }}</div>
+                      }
+                      <div class="place-info">
+                        <span class="place-name">{{ place.name }}</span>
+                      </div>
+                    </li>
+                  }
+                </ol>
+              }
+            }
+          </mat-expansion-panel>
+        }
+      </mat-accordion>
+    }
+  }
+  </div>
+</div>

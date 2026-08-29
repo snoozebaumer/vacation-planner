@@ -1,0 +1,9 @@
+<button
+  type="button"
+  class="lang-toggle"
+  (click)="i18n.toggle()"
+  [attr.aria-label]="i18n.currentLang() === 'en' ? 'Auf Deutsch umschalten' : 'Switch to English'"
+>
+  {{ i18n.currentLang() === 'en' ? 'DE' : 'EN' }}
+</button>
+<router-outlet></router-outlet>

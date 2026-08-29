@@ -1,0 +1,85 @@
+<div class="page">
+  @if (creatingVacation(); as vacation) {
+    <mat-card class="progress-card">
+      <h1>{{ 'vacationCreate.preparingTitle' | translate: { name: vacation.name } }}</h1>
+      <p>
+        {{
+          'vacationCreate.researchingProgress'
+            | translate: { processed: vacation.places_processed, total: vacation.places_total }
+        }}
+      </p>
+      <mat-progress-bar mode="determinate" [value]="progressPercent"></mat-progress-bar>
+      <p class="eta">{{ etaLabel }}</p>
+    </mat-card>
+  } @else {
+    <mat-card class="form-card">
+      <h1>{{ 'vacationCreate.title' | translate }}</h1>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>{{ 'vacationCreate.nameLabel' | translate }}</mat-label>
+        <input
+          matInput
+          [(ngModel)]="name"
+          maxlength="100"
+          [placeholder]="'vacationCreate.namePlaceholder' | translate"
+          (blur)="onTitleBlur()"
+        />
+      </mat-form-field>
+
+      <div class="row">
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'vacationCreate.durationLabel' | translate }}</mat-label>
+          <input matInput type="number" min="1" [(ngModel)]="durationDays" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'vacationCreate.activeHoursLabel' | translate }}</mat-label>
+          <input matInput type="number" min="1" max="24" [(ngModel)]="activeHoursPerDay" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'vacationCreate.travelTimeLabel' | translate }}</mat-label>
+          <input matInput type="number" min="0" step="0.05" [(ngModel)]="avgTravelTimeHours" />
+        </mat-form-field>
+      </div>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>{{ 'vacationCreate.placesLabel' | translate }}</mat-label>
+        <textarea
+          matInput
+          rows="8"
+          [(ngModel)]="placesText"
+          [disabled]="!!placesFile"
+          [placeholder]="placesPlaceholder()"
+        ></textarea>
+      </mat-form-field>
+
+      <div class="file-row">
+        <span>{{ 'vacationCreate.orUploadFile' | translate }}</span>
+        <input type="file" accept=".txt,text/plain" (change)="onFileSelected($event)" />
+        @if (placesFile) {
+          <span class="file-name">{{ placesFile.name }}</span>
+        }
+      </div>
+
+      <mat-checkbox class="private-checkbox" [(ngModel)]="isPrivate">
+        {{ 'vacationCreate.privateLabel' | translate }}
+      </mat-checkbox>
+
+      @if (isPrivate) {
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>{{ 'vacationCreate.passwordLabel' | translate }}</mat-label>
+          <input matInput type="password" [(ngModel)]="password" />
+        </mat-form-field>
+      }
+
+      @if (errorMessage()) {
+        <p class="error">{{ errorMessage() }}</p>
+      }
+
+      <button mat-raised-button color="primary" [disabled]="!canSubmit" (click)="submit()">
+        {{ 'vacationCreate.submitButton' | translate }}
+      </button>
+    </mat-card>
+  }
+</div>

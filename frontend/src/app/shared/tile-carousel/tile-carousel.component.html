@@ -1,0 +1,88 @@
+<div class="carousel-wrap" [class.dense]="isDense()">
+  @if (showBackButton()) {
+    <button type="button" class="back-btn" (click)="back.emit()" [attr.aria-label]="backLabel()" [title]="backLabel()">
+      <span class="material-icons">arrow_back</span>
+    </button>
+  }
+
+  @if (title()) {
+    <h1 class="carousel-title">{{ title() }}</h1>
+  }
+
+  @if (showSearch()) {
+    <div class="search-wrap">
+      <span class="material-icons search-icon">search</span>
+      <input
+        type="text"
+        class="search-input"
+        [placeholder]="searchPlaceholder()"
+        [value]="searchQuery()"
+        (input)="onSearchInput($any($event.target).value)"
+      />
+      @if (searchQuery()) {
+        <button type="button" class="search-clear" (click)="clearSearch()" aria-label="Clear search">
+          <span class="material-icons">close</span>
+        </button>
+      }
+    </div>
+  }
+
+  <div class="carousel" [class.dense]="isDense()">
+    <button type="button" class="tile add-tile" (click)="add.emit()">
+      <span class="circle add-circle">
+        <span class="material-icons">add</span>
+      </span>
+      <span class="tile-label">{{ addLabel() }}</span>
+    </button>
+
+    @for (tile of filteredTiles(); track tile.id) {
+      <button
+        type="button"
+        class="tile"
+        (click)="onTileClick(tile.id)"
+        (contextmenu)="onContextMenu($event, tile.id)"
+        (touchstart)="onTouchStart($event, tile.id)"
+        (touchend)="onTouchEnd()"
+        (touchmove)="onTouchEnd()"
+        (mouseenter)="onTileHover($event, tile)"
+        (mousemove)="onTileHover($event, tile)"
+        (mouseleave)="onTileHoverEnd()"
+      >
+        <span class="circle" [style.background]="colorFor(tile.id)">
+          {{ initialsFor(tile.label) }}
+          @if (tile.locked) {
+            <span class="lock-badge material-icons">lock</span>
+          }
+        </span>
+        <span class="tile-label">{{ tile.label }}</span>
+        @if (tile.subLabel) {
+          <span class="tile-sublabel">{{ tile.subLabel }}</span>
+        }
+      </button>
+    }
+  </div>
+
+  @if (showSearch() && searchQuery() && filteredTiles().length === 0) {
+    <p class="no-results">{{ noResultsLabel() }}</p>
+  }
+
+  @if (hoveredTile(); as t) {
+    <div class="cursor-tooltip" [style.left.px]="t.x" [style.top.px]="t.y">{{ t.label }}</div>
+  }
+
+  @if (contextMenu(); as menu) {
+    <div
+      class="context-menu-backdrop"
+      (click)="closeContextMenu()"
+      (contextmenu)="$event.preventDefault(); closeContextMenu()"
+    ></div>
+    <div class="context-menu" [style.left.px]="menu.x" [style.top.px]="menu.y">
+      <button type="button" class="context-menu-item" (click)="selectFromMenu(menu.tileId)">
+        {{ selectMenuLabel() }}
+      </button>
+      <button type="button" class="context-menu-item" (click)="deleteFromMenu(menu.tileId)">
+        {{ deleteMenuLabel() }}
+      </button>
+    </div>
+  }
+</div>

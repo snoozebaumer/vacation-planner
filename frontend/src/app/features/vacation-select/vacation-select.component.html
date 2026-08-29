@@ -1,0 +1,52 @@
+<app-tile-carousel
+  [title]="'vacationSelect.title' | translate"
+  [addLabel]="'vacationSelect.addLabel' | translate"
+  [tiles]="tiles()"
+  [searchable]="true"
+  [searchPlaceholder]="'vacationSelect.searchPlaceholder' | translate"
+  [noResultsLabel]="'vacationSelect.noResults' | translate"
+  [deletable]="true"
+  [selectMenuLabel]="'vacationSelect.selectMenuLabel' | translate"
+  [deleteMenuLabel]="'vacationSelect.deleteMenuLabel' | translate"
+  (select)="onSelect($event)"
+  (add)="onAdd()"
+  (delete)="onDeleteRequested($event)"
+></app-tile-carousel>
+
+@if (deleteTarget(); as vacation) {
+  <div class="overlay" (click)="cancelDelete()">
+    <mat-card class="dialog" (click)="$event.stopPropagation()">
+      <h2>{{ 'vacationSelect.deleteTitle' | translate: { vacation: vacation.name } }}</h2>
+      <p class="warning">{{ 'vacationSelect.deleteWarning' | translate }}</p>
+
+      @if (vacation.hasPassword) {
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>{{ 'vacationSelect.deletePasswordLabel' | translate }}</mat-label>
+          <input
+            matInput
+            type="password"
+            [(ngModel)]="deletePassword"
+            (keyup.enter)="confirmDelete()"
+            autofocus
+          />
+        </mat-form-field>
+      }
+
+      @if (deleteError()) {
+        <p class="error">{{ deleteError() }}</p>
+      }
+
+      <div class="actions">
+        <button mat-button (click)="cancelDelete()">{{ 'common.cancel' | translate }}</button>
+        <button
+          mat-raised-button
+          color="warn"
+          [disabled]="(vacation.hasPassword && !deletePassword) || deleting()"
+          (click)="confirmDelete()"
+        >
+          {{ (deleting() ? 'vacationSelect.deletingButton' : 'vacationSelect.deleteButton') | translate }}
+        </button>
+      </div>
+    </mat-card>
+  </div>
+}

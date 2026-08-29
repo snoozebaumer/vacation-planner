@@ -1,0 +1,67 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: vacation
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
+      POSTGRES_DB: vacation_planner
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vacation -d vacation_planner"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  searxng:
+    image: searxng/searxng:latest
+    restart: unless-stopped
+    environment:
+      - SEARXNG_BASE_URL=http://localhost:8080/
+      - UWSGI_WORKERS=2
+      - UWSGI_THREADS=2
+    volumes:
+      - ./searxng:/etc/searxng:rw
+    ports:
+      - "127.0.0.1:8080:8080"
+
+  backend:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    environment:
+      PORT: 3000
+      DATABASE_URL: postgres://vacation:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}@postgres:5432/vacation_planner
+      SEARXNG_URL: http://searxng:8080
+      # Requires Ollama running natively on the host (containerized inference
+      # too slow to be usable). Install from ollama.com and run
+      # `ollama pull qwen2.5:7b-instruct` once.
+      OLLAMA_URL: http://host.docker.internal:11434
+      OLLAMA_MODEL: qwen2.5:7b-instruct
+      OLLAMA_CHAT_TIMEOUT_MS: 60000
+      PHOTO_CONCURRENCY: 4
+      LLM_CONCURRENCY: 1
+      VACATION_UNLOCK_SECRET: ${VACATION_UNLOCK_SECRET:?VACATION_UNLOCK_SECRET must be set in .env}
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      searxng:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ./frontend
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:4200:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:

@@ -1,0 +1,50 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.card {
+  width: 320px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.lock-icon {
+  font-size: 2.5rem;
+  color: #01579b;
+  margin-bottom: 0.5rem;
+}
+
+h1 {
+  font-size: 1.2rem;
+  color: #01579b;
+  margin: 0 0 0.5rem;
+}
+
+.hint {
+  color: rgba(1, 87, 155, 0.7);
+  font-size: 0.85rem;
+  margin: 0 0 1.25rem;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.error {
+  color: #c62828;
+  font-size: 0.85rem;
+  margin: -0.5rem 0 0.5rem;
+  align-self: flex-start;
+}
+
+.submit-btn {
+  width: 100%;
+  margin-top: 0.5rem;
+}

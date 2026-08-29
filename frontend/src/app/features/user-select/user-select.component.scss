@@ -1,0 +1,100 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(1, 41, 74, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.dialog {
+  width: 320px;
+  padding: 1.5rem;
+
+  h2 {
+    margin-top: 0;
+    color: #01579b;
+  }
+}
+
+.full-width {
+  width: 100%;
+}
+
+.error {
+  color: #c62828;
+  font-size: 0.85rem;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+// The carousel enforces min-height: 100vh internally so it can self-center
+// vertically when it's the only thing on the page (e.g. vacation-select).
+// Here it shares the page with the share box, so we relax its own
+// self-centering and instead center the tiles + share box together as one
+// block via .page below — otherwise the tiles would center inside their own
+// 100vh and shove the share box a further viewport down.
+:host ::ng-deep app-tile-carousel .carousel-wrap {
+  min-height: auto;
+  padding-bottom: 1rem;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.share-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 2rem 3rem;
+  text-align: center;
+  margin-bottom: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.share-label {
+  font-size: 0.85rem;
+  color: rgba(1, 87, 155, 0.75);
+}
+
+.share-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 420px;
+}
+
+.share-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  border-radius: 999px;
+  padding: 0.6rem 1rem;
+  font-size: 0.85rem;
+  font-family: inherit;
+  color: #01579b;
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 2px 8px rgba(2, 60, 90, 0.12);
+
+  &:focus {
+    outline: none;
+    background: #fff;
+  }
+}
+
+.copy-btn {
+  flex-shrink: 0;
+  color: #01579b;
+}

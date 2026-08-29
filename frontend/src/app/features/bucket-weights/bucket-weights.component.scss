@@ -1,0 +1,307 @@
+.page {
+  min-height: 100vh;
+  padding: 1.5rem 2rem 3rem;
+}
+
+.top-bar {
+  display: grid;
+  grid-template-columns: 1fr minmax(0, auto) 1fr;
+  align-items: center;
+  column-gap: 1rem;
+  margin-bottom: 0.5rem;
+
+  h1 {
+    grid-column: 2;
+    color: #01579b;
+    margin: 0;
+    text-align: center;
+  }
+}
+
+.top-bar-spacer {
+  justify-self: end;
+}
+
+.content {
+  max-width: 1020px;
+  margin: 0 auto;
+}
+
+// Narrower and slightly smaller than a full-width intro would be — keeps it
+// clear of the top-right corner where the priorities panel floats, and
+// generally gives the floating panel more visual "room to breathe" above
+// the page rather than reading as squeezed in alongside a wide paragraph.
+.intro {
+  max-width: 620px;
+  color: rgba(1, 87, 155, 0.75);
+  font-size: 0.85rem;
+  margin: 0 auto 1.5rem;
+  text-align: center;
+}
+
+.error {
+  color: #c62828;
+  margin-bottom: 1rem;
+}
+
+// Hugs its own content width instead of stretching across .content — a
+// full-width banner would always push its button to the far right, right
+// where the floating priorities panel lives, no matter how far right that
+// panel is pushed. Keeping this compact and left-aligned means the two
+// simply never compete for the same space.
+.uncategorized-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 100%;
+  background: rgba(198, 40, 40, 0.08);
+  border: 1px solid rgba(198, 40, 40, 0.25);
+  border-radius: 10px;
+  padding: 0.5rem 0.6rem 0.5rem 0.9rem;
+  margin-bottom: 1.25rem;
+
+  > mat-icon {
+    color: #c62828;
+    flex-shrink: 0;
+  }
+}
+
+.uncategorized-text {
+  min-width: 0;
+  font-size: 0.85rem;
+  color: #8d2424;
+}
+
+.uncategorized-banner .retry-btn {
+  flex-shrink: 0;
+  color: #c62828;
+
+  mat-icon.spinning {
+    animation: retry-spin 0.8s linear infinite;
+  }
+}
+
+@keyframes retry-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.center-fill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 0;
+}
+
+.bucket-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 560px) {
+  .bucket-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.bucket-card {
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(2, 60, 90, 0.1);
+}
+
+.card-image {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  display: block;
+}
+
+.card-image.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 2rem;
+  background: linear-gradient(160deg, #4fc3f7, #0288d1);
+}
+
+.card-body {
+  padding: 0.7rem 0.9rem 0.5rem;
+}
+
+.name-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.1rem;
+}
+
+.bucket-name {
+  font-weight: 500;
+  color: #01579b;
+  font-size: 0.9rem;
+  line-height: 1.25;
+}
+
+.pct-field {
+  display: flex;
+  align-items: center;
+  gap: 0.1rem;
+  flex-shrink: 0;
+  background: rgba(2, 136, 209, 0.08);
+  border-radius: 8px;
+  padding: 0.1rem 0.4rem;
+  border: 1px solid transparent;
+
+  // Flagged when this field is one of the "last value(s)" pushing the
+  // total over 100 — see invalidBucketIds in the component.
+  &.invalid {
+    background: rgba(198, 40, 40, 0.1);
+    border-color: rgba(198, 40, 40, 0.4);
+
+    .pct-input,
+    .pct-sign {
+      color: #c62828;
+    }
+  }
+}
+
+.pct-input {
+  width: 2.1rem;
+  border: none;
+  background: transparent;
+  color: #01579b;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-align: right;
+  padding: 0.15rem 0;
+
+  // Hide the native spinner arrows — the slider is the primary control,
+  // this field is for precise entry, not incrementing.
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  appearance: textfield;
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.pct-sign {
+  color: rgba(1, 87, 155, 0.7);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.slider {
+  width: 100%;
+  --mat-slider-active-track-color: #0288d1;
+  --mat-slider-inactive-track-color: rgba(2, 136, 209, 0.2);
+  --mat-slider-handle-color: #0288d1;
+  --mdc-slider-handle-height: 14px;
+  --mdc-slider-handle-width: 14px;
+  --mdc-slider-active-track-height: 4px;
+  --mdc-slider-inactive-track-height: 4px;
+  margin: 0 -0.5rem;
+}
+
+// Pinned to the true browser edge rather than the content column — on any
+// normal desktop width, .content's own max-width already leaves real empty
+// margin out there, so the panel lives in space nothing else is using
+// instead of competing with the cards for the same space. This deliberately
+// does NOT try to guarantee zero overlap on every possible window width;
+// forcing that would mean shrinking the cards/button to make room, which is
+// exactly what should NOT happen — the main content stays entirely
+// unaware of and unaffected by this panel's existence.
+.summary-panel {
+  position: fixed;
+  top: 1.5rem;
+  right: 0.5rem;
+  width: 210px;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(4px);
+  border-radius: 12px;
+  padding: 0.7rem 0.9rem 0.8rem;
+  box-shadow: 0 4px 14px rgba(2, 60, 90, 0.18);
+  z-index: 50;
+}
+
+@media (max-width: 860px) {
+  .summary-panel {
+    position: static;
+    width: 100%;
+    margin-top: 1.5rem;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: none;
+    box-shadow: 0 2px 10px rgba(2, 60, 90, 0.1);
+  }
+}
+
+.summary-title {
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #01579b;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.summary-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.summary-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  transition: opacity 0.15s ease;
+}
+
+.summary-name {
+  color: #01579b;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.summary-pct {
+  color: rgba(1, 87, 155, 0.75);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.total-hint {
+  color: #c62828;
+  font-size: 0.82rem;
+  text-align: center;
+  margin: 1.5rem 0 0;
+}
+
+.save-btn {
+  display: block;
+  width: 100%;
+  margin-top: 0.6rem;
+}
+

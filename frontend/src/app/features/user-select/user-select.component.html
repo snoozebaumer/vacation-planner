@@ -1,0 +1,60 @@
+<div class="page">
+  <app-tile-carousel
+    [title]="'userSelect.title' | translate: { vacation: vacationName() }"
+    [addLabel]="'userSelect.addLabel' | translate"
+    [tiles]="tiles()"
+    [showBackButton]="true"
+    [backLabel]="'common.back' | translate"
+    (select)="onSelect($event)"
+    (add)="onAdd()"
+    (back)="goBack()"
+  ></app-tile-carousel>
+
+  <div class="share-section">
+    <label class="share-label" for="share-link-input">{{ 'userSelect.shareLabel' | translate }}</label>
+    <div class="share-row">
+      <input
+        id="share-link-input"
+        type="text"
+        class="share-input"
+        [value]="shareUrl"
+        readonly
+        (click)="$any($event.target).select()"
+      />
+      <button
+        mat-icon-button
+        class="copy-btn"
+        [title]="'userSelect.copyTitle' | translate"
+        (click)="copyShareLink()"
+      >
+        <mat-icon>{{ copied() ? 'check' : 'content_copy' }}</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>
+
+@if (showAddDialog()) {
+  <div class="overlay" (click)="cancelAdd()">
+    <mat-card class="dialog" (click)="$event.stopPropagation()">
+      <h2>{{ 'userSelect.dialogTitle' | translate }}</h2>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>{{ 'userSelect.nameLabel' | translate }}</mat-label>
+        <input matInput [(ngModel)]="newName" maxlength="100" (keyup.enter)="confirmAdd()" autofocus />
+      </mat-form-field>
+      @if (errorMessage()) {
+        <p class="error">{{ errorMessage() }}</p>
+      }
+      <div class="actions">
+        <button mat-button (click)="cancelAdd()">{{ 'common.cancel' | translate }}</button>
+        <button
+          mat-raised-button
+          color="primary"
+          [disabled]="newName.trim().length < 3 || newName.trim().length > 100 || creating()"
+          (click)="confirmAdd()"
+        >
+          {{ 'common.continue' | translate }}
+        </button>
+      </div>
+    </mat-card>
+  </div>
+}

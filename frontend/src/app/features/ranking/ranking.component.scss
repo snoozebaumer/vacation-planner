@@ -1,0 +1,466 @@
+.page {
+  min-height: 100vh;
+  padding: 1.5rem 2rem 3rem;
+}
+
+// Unconstrained, full page width — this keeps the top-bar's right-aligned
+// button in the same screen position as the matchup page's, whose page
+// isn't width-capped. Only the content below is capped for readability.
+//
+// Three equal-width columns rather than flex space-between: with the page
+// now full-width, a plain flex title would sit flush at the far-left edge,
+// disconnected from the narrower centered content below it. The empty
+// left-hand spacer column mirrors the button column so the title is
+// genuinely centered on the page, not just centered relative to the button.
+.top-bar {
+  display: grid;
+  grid-template-columns: 1fr minmax(0, auto) 1fr;
+  align-items: center;
+  column-gap: 1rem;
+
+  h1 {
+    grid-column: 2;
+    color: #01579b;
+    margin: 0;
+    // Explicit rather than inherited: body's Material typography sets a
+    // fixed pixel line-height sized for its own small body text, which
+    // doesn't scale up for a much larger heading — the mismatch left
+    // ascenders/descenders poking outside their line box, invisibly
+    // overflowing until `overflow: hidden` below started clipping them.
+    line-height: 1.3;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  mat-icon {
+    margin-right: 0.25rem;
+  }
+}
+
+.top-bar-side {
+  display: flex;
+  align-items: center;
+}
+
+.top-bar-actions {
+  justify-content: flex-end;
+  gap: 0.4rem;
+}
+
+@media (max-width: 480px) {
+  .top-bar {
+    grid-template-columns: 1fr;
+    row-gap: 0.5rem;
+
+    h1 {
+      grid-column: 1;
+      white-space: normal;
+    }
+
+    .top-bar-side:empty {
+      display: none;
+    }
+
+    .top-bar-actions {
+      justify-content: center;
+    }
+  }
+}
+
+.content {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.export-btn {
+  margin-bottom: 1rem;
+}
+
+.export-message {
+  color: rgba(1, 87, 155, 0.75);
+  font-size: 0.85rem;
+  margin: 0.5rem 0 1rem;
+}
+
+.center-fill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 0;
+}
+
+.budget-note {
+  color: rgba(1, 87, 155, 0.75);
+  font-size: 0.9rem;
+  margin: 0.5rem 0 1.5rem;
+}
+
+.error {
+  color: #c62828;
+}
+
+.notice-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(2, 136, 209, 0.1);
+  border: 1px solid rgba(2, 136, 209, 0.3);
+  border-radius: 10px;
+  padding: 0.6rem 0.6rem 0.6rem 0.9rem;
+  margin-bottom: 1.25rem;
+  color: #01579b;
+  font-size: 0.85rem;
+
+  span {
+    flex: 1;
+  }
+}
+
+.notice-dismiss {
+  flex-shrink: 0;
+  width: 1.8rem;
+  height: 1.8rem;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: rgba(1, 87, 155, 0.6);
+  cursor: pointer;
+
+  mat-icon {
+    font-size: 1.1rem;
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
+  &:hover {
+    background: rgba(1, 87, 155, 0.1);
+  }
+}
+
+.rank-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rank-row {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  background: rgba(255, 255, 255, 0.65);
+  border-radius: 10px;
+  padding: 0.5rem 0.9rem;
+
+  &.below-cutoff {
+    opacity: 0.6;
+  }
+}
+
+.rank-number {
+  width: 2rem;
+  font-weight: 700;
+  color: #01579b;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.thumb {
+  width: 48px;
+  height: 64px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.thumb.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  background: linear-gradient(160deg, #4fc3f7, #0288d1);
+}
+
+.place-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.place-name {
+  font-weight: 500;
+  color: #01579b;
+}
+
+.place-description {
+  font-size: 0.8rem;
+  color: rgba(1, 87, 155, 0.65);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.place-hours {
+  font-size: 0.85rem;
+  color: rgba(1, 87, 155, 0.7);
+  flex-shrink: 0;
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.2rem;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.favorite-badge {
+  background: rgba(255, 193, 7, 0.18);
+  color: #8d6200;
+}
+
+.veto-badge {
+  background: rgba(198, 40, 40, 0.12);
+  color: #c62828;
+}
+
+.veto-btn {
+  flex-shrink: 0;
+  color: rgba(1, 87, 155, 0.4);
+
+  &.active {
+    color: #c62828;
+  }
+}
+
+.cutoff-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0;
+  color: #c62828;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-top: 2px dashed #c62828;
+  margin: 0.25rem 0;
+}
+
+.section-title {
+  color: #01579b;
+  font-size: 1.1rem;
+  margin: 2rem 0 0.75rem;
+}
+
+.bucket-section {
+  margin-bottom: 1.5rem;
+}
+
+.bucket-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 2rem 0 0.75rem;
+
+  .section-title {
+    margin: 0;
+  }
+}
+
+.bucket-budget {
+  font-size: 0.8rem;
+  color: rgba(1, 87, 155, 0.65);
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+// Hover/focus-revealed breakdown of where a bucket's budget was topped up
+// from, or given away to (see BudgetAdjustment) — only rendered at all when
+// a bucket actually had hours redistributed. Plain CSS :hover/:focus-within
+// rather than a JS-driven tooltip: unlike the tile carousel's cursor-
+// tracking tooltip, this one has a fixed anchor (the icon itself), so there
+// is no need for the extra machinery.
+//
+// The tooltip sits directly against the icon (no gap) specifically so the
+// cursor never crosses a dead zone between them on the way up — any gap
+// there, however small, is a spot where :hover on .budget-info briefly
+// stops being true and the tooltip flickers shut before you reach it.
+// pointer-events stays enabled (unlike the cursor-tracking tile tooltip)
+// because this one now holds an interactive <details> accordion.
+.budget-info {
+  position: relative;
+  display: inline-flex;
+  cursor: default;
+  outline: none;
+
+  .info-icon {
+    font-size: 1rem;
+    width: 1rem;
+    height: 1rem;
+    color: rgba(1, 87, 155, 0.5);
+  }
+
+  .budget-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    width: max-content;
+    max-width: 220px;
+    background: #2e2e2e;
+    color: #ffffff;
+    font-size: 0.78rem;
+    font-weight: 400;
+    padding: 0.5rem 0.7rem;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.1s ease;
+  }
+
+  &:hover .budget-tooltip,
+  &:focus-within .budget-tooltip {
+    visibility: visible;
+    opacity: 1;
+  }
+}
+
+.adj-note {
+  display: block;
+  white-space: normal;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.72rem;
+  line-height: 1.4;
+  margin-bottom: 0.25rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.adj-line {
+  // Not nowrap — a long bucket name (e.g. "Tourist Attractions &
+  // Landmarks") plus the hours prefix can exceed the tooltip's max-width,
+  // and nowrap here would overflow past the background instead of wrapping
+  // inside it (the same bug just fixed on .adj-note).
+  white-space: normal;
+
+  &.positive {
+    color: #81c784;
+  }
+  &.negative {
+    color: #e57373;
+  }
+}
+
+// Native <details>/<summary> — the summary text ("Why does this happen?")
+// always shows regardless of open/closed state for free, and it's already
+// keyboard-toggleable without any extra JS or Angular Material dependency.
+.adj-explainer {
+  margin-top: 0.35rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+
+  summary {
+    cursor: pointer;
+    white-space: nowrap;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.72rem;
+
+    &:hover {
+      color: #ffffff;
+    }
+  }
+
+  .adj-explainer-body {
+    white-space: normal;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.72rem;
+    line-height: 1.4;
+    margin-top: 0.3rem;
+  }
+}
+
+.retry-btn {
+  flex-shrink: 0;
+
+  mat-icon {
+    margin-right: 0.25rem;
+    font-size: 1.1rem;
+    width: 1.1rem;
+    height: 1.1rem;
+    vertical-align: text-bottom;
+  }
+}
+
+.uncategorized-note {
+  color: rgba(1, 87, 155, 0.65);
+  font-size: 0.85rem;
+  margin: -0.4rem 0 0.75rem;
+}
+
+.nested-bucket-title {
+  color: rgba(1, 87, 155, 0.8);
+  font-size: 0.9rem;
+  margin: 1rem 0 0.4rem;
+
+  &:first-child {
+    margin-top: 0.25rem;
+  }
+}
+
+.user-rankings {
+  background: transparent;
+
+  ::ng-deep .mat-expansion-panel {
+    background: rgba(255, 255, 255, 0.65);
+    margin-bottom: 0.5rem;
+    border-radius: 10px !important;
+  }
+}
+
+.rank-list.nested {
+  margin-top: 0.5rem;
+  gap: 0.4rem;
+
+  .rank-row {
+    background: rgba(255, 255, 255, 0.5);
+    padding: 0.4rem 0.7rem;
+  }
+
+  .thumb {
+    width: 36px;
+    height: 48px;
+  }
+}
+
+.empty-note {
+  color: rgba(1, 87, 155, 0.6);
+  font-size: 0.85rem;
+}

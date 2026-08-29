@@ -1,0 +1,58 @@
+use_default_settings:
+  engines:
+    # `disabled: true` on an individual engine only hides it from default
+    # search categories — SearxNG still calls the engine's init() at startup
+    # regardless, so it doesn't stop the request that trips a rate limit or
+    # CAPTCHA. `keep_only` excludes engines from registration entirely.
+    # This keeps just a handful of general web engines that tolerate
+    # low-volume, single-IP, scripted traffic reasonably well (brave and
+    # startpage block/CAPTCHA after a handful of requests; wikidata's SPARQL
+    # endpoint 403s outright; ahmia/torch are dark-web engines that don't
+    # even load in this image and are irrelevant to travel research anyway).
+    #
+    # duckduckgo and google are both listed here in SearXNG's docs as
+    # tolerating this kind of traffic, but as of 2026-08 duckduckgo trips a
+    # CAPTCHA on essentially every request from this instance's IP, and
+    # google silently returns zero results — and a hard CAPTCHA exception
+    # from one engine appears to abort SearxNG's whole multi-engine merge
+    # rather than being isolated to that engine, so keeping either of them
+    # in the mix was silently zeroing out every search (bing/mojeek/
+    # wikipedia never got a chance to contribute). Verified 2026-08-28 that
+    # dropping both and keeping only the three below reliably returns real
+    # results again.
+    keep_only:
+      - bing
+      - mojeek
+      - wikipedia
+
+# `keep_only` above only controls which engines get registered at all — it
+# does NOT override each engine's own `disabled` flag from SearXNG's base
+# defaults, which most non-duckduckgo/google engines carry. Without this,
+# bing and mojeek were registered but silently never actually queried
+# (verified via /config: enabled was false for both), leaving only
+# wikipedia doing anything — which explains why "web search" results were
+# nearly always empty even before duckduckgo/google were dropped above.
+engines:
+  - name: bing
+    disabled: false
+  - name: mojeek
+    disabled: false
+  - name: wikipedia
+    disabled: false
+
+general:
+  instance_name: "vacationplanner-searxng"
+
+search:
+  safe_search: 0
+  formats:
+    - html
+    - json
+
+server:
+  secret_key: "vacationplanner-local-only-secret-key-change-me"
+  limiter: false
+  image_proxy: false
+
+outgoing:
+  request_timeout: 8.0

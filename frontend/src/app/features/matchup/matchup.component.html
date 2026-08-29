@@ -1,0 +1,70 @@
+<div class="page">
+  <header class="top-bar">
+    <div class="top-bar-left">
+      <button mat-icon-button [title]="'common.back' | translate" (click)="goToVacationSelect()">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <span class="rounds">{{ 'matchup.roundsPlayed' | translate: { count: roundsPlayed() } }}</span>
+    </div>
+    <div class="top-bar-actions">
+      <button
+        mat-icon-button
+        [title]="'matchup.adjustPrioritiesTitle' | translate"
+        (click)="goToPriorities()"
+      >
+        <mat-icon>tune</mat-icon>
+      </button>
+      <button mat-stroked-button color="primary" (click)="goToRanking()">
+        <mat-icon>leaderboard</mat-icon>
+        {{ 'common.ranking' | translate }}
+      </button>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="center-fill">
+      <mat-spinner></mat-spinner>
+    </div>
+  } @else if (errorMessage()) {
+    <div class="center-fill">
+      <p class="error">{{ errorMessage() }}</p>
+      <button mat-raised-button color="primary" (click)="loadMatchup()">{{ 'common.retry' | translate }}</button>
+    </div>
+  } @else if (places(); as places) {
+    @if (bucketName()) {
+      <div class="bucket-label">{{ bucketName() }}</div>
+    }
+    <div class="prompt">{{ 'matchup.prompt' | translate }}</div>
+    <div class="duel" [class.exiting]="exiting()">
+      @for (place of places; track place.id) {
+        <button
+          type="button"
+          class="place-card"
+          [class.selected]="votedId() === place.id"
+          [class.loser]="votedId() !== null && votedId() !== place.id"
+          [disabled]="voting()"
+          (click)="choose(place, place.id === places[0].id ? places[1] : places[0])"
+        >
+          @if (place.photo_url) {
+            <img class="photo" [src]="place.photo_url" [alt]="place.name" referrerpolicy="no-referrer" />
+          } @else {
+            <div class="photo placeholder">{{ place.name.charAt(0) }}</div>
+          }
+          <div class="name-overlay">
+            <div class="name">{{ place.name }}</div>
+            @if (place.description) {
+              <div class="description">{{ place.description }}</div>
+            }
+          </div>
+          @if (votedId() === place.id) {
+            <div class="sparkles" aria-hidden="true">
+              @for (i of sparkleIndices; track i) {
+                <span class="sparkle" [style.--i]="i"></span>
+              }
+            </div>
+          }
+        </button>
+      }
+    </div>
+  }
+</div>

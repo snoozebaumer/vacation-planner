@@ -1,0 +1,297 @@
+.cursor-tooltip {
+  position: fixed;
+  z-index: 2000;
+  background: #2e2e2e;
+  color: #ffffff;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  padding: 0.4rem 0.7rem;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  // Renders \n in the tooltip text as real line breaks (e.g. name on its
+  // own line, details below) while still collapsing runs of plain spaces.
+  white-space: pre-line;
+  max-width: 260px;
+}
+
+.carousel-wrap {
+  min-height: 100vh;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+
+  &.dense {
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+}
+
+.back-btn {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 100;
+  width: 2.6rem;
+  height: 2.6rem;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.85);
+  color: #01579b;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(2, 60, 90, 0.2);
+  transition: background 0.15s ease, transform 0.15s ease;
+
+  .material-icons {
+    font-size: 1.4rem;
+  }
+
+  &:hover {
+    background: #fff;
+    transform: translateY(-1px);
+  }
+}
+
+.carousel-title {
+  color: #01579b;
+  font-weight: 500;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.search-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 360px;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+
+  .search-icon {
+    position: absolute;
+    left: 0.9rem;
+    color: rgba(1, 87, 155, 0.55);
+    font-size: 1.3rem;
+    pointer-events: none;
+  }
+}
+
+.search-input {
+  width: 100%;
+  border: none;
+  border-radius: 999px;
+  padding: 0.65rem 2.4rem;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: #01579b;
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 2px 8px rgba(2, 60, 90, 0.12);
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+
+  &::placeholder {
+    color: rgba(1, 87, 155, 0.5);
+  }
+
+  &:focus {
+    outline: none;
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(2, 60, 90, 0.2);
+  }
+}
+
+.search-clear {
+  position: absolute;
+  right: 0.5rem;
+  width: 1.8rem;
+  height: 1.8rem;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: rgba(1, 87, 155, 0.55);
+  cursor: pointer;
+
+  .material-icons {
+    font-size: 1.1rem;
+  }
+
+  &:hover {
+    background: rgba(1, 87, 155, 0.1);
+  }
+}
+
+.no-results {
+  color: rgba(1, 87, 155, 0.6);
+  font-size: 0.9rem;
+  margin-top: 1rem;
+}
+
+.carousel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2.25rem;
+  justify-content: center;
+  max-width: 1000px;
+
+  &.dense {
+    justify-content: flex-start;
+    max-width: none;
+    width: 100%;
+    gap: 1.25rem;
+  }
+}
+
+// Invisible, full-screen — exists purely so a click anywhere outside the
+// open menu closes it, the standard context-menu dismissal behavior.
+.context-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1999;
+}
+
+.context-menu {
+  position: fixed;
+  z-index: 2000;
+  min-width: 140px;
+  background: #2e2e2e;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.55);
+  padding: 0.3rem;
+  overflow: hidden;
+}
+
+.context-menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 0.55rem 0.8rem;
+  border-radius: 5px;
+  cursor: pointer;
+
+  &:hover {
+    background: #4a4a4a;
+  }
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  font-family: inherit;
+
+  &:focus-visible .circle {
+    outline: 3px solid #0288d1;
+    outline-offset: 3px;
+  }
+}
+
+.circle {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.1rem;
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  box-shadow: 0 4px 12px rgba(2, 60, 90, 0.2);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.lock-badge {
+  position: absolute;
+  bottom: 0.1rem;
+  right: 0.1rem;
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #01579b;
+  color: #fff;
+  font-size: 1rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.dense .lock-badge {
+  width: 1.3rem;
+  height: 1.3rem;
+  font-size: 0.75rem;
+}
+
+.tile:hover .circle,
+.tile:focus-visible .circle {
+  transform: scale(1.06);
+  box-shadow: 0 6px 18px rgba(2, 60, 90, 0.3);
+}
+
+.dense .circle {
+  width: 92px;
+  height: 92px;
+  font-size: 1.3rem;
+}
+
+.add-circle {
+  background: rgba(255, 255, 255, 0.55);
+  border: 2px dashed #4fa3c4;
+  color: #01579b;
+
+  .material-icons {
+    font-size: 2.4rem;
+  }
+}
+
+.dense .add-circle .material-icons {
+  font-size: 1.6rem;
+}
+
+.tile-label {
+  margin-top: 0.7rem;
+  font-size: 1rem;
+  color: #01579b;
+  text-align: center;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dense .tile-label {
+  font-size: 0.82rem;
+  max-width: 92px;
+}
+
+.tile-sublabel {
+  font-size: 0.72rem;
+  color: rgba(1, 87, 155, 0.7);
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dense .tile-sublabel {
+  max-width: 92px;
+}

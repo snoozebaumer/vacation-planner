@@ -1,0 +1,109 @@
+<div class="page">
+  <header class="top-bar">
+    <button mat-icon-button [title]="'common.back' | translate" (click)="goToVacationSelect()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1>{{ 'bucketWeights.title' | translate }}</h1>
+    <span class="top-bar-spacer"></span>
+  </header>
+
+  <div class="content">
+    <p class="intro">{{ 'bucketWeights.intro' | translate }}</p>
+
+    @if (errorMessage()) {
+      <p class="error">{{ errorMessage() }}</p>
+    }
+
+    @if (loading()) {
+      <div class="center-fill">
+        <mat-spinner></mat-spinner>
+      </div>
+    } @else {
+      @if (uncategorizedCount() > 0) {
+        <div class="uncategorized-banner">
+          <mat-icon>error_outline</mat-icon>
+          <span class="uncategorized-text">
+            {{
+              (uncategorizedCount() === 1 ? 'bucketWeights.uncategorizedOne' : 'bucketWeights.uncategorizedOther')
+                | translate: { count: uncategorizedCount() }
+            }}
+          </span>
+          <button
+            mat-icon-button
+            class="retry-btn"
+            [disabled]="retryingUncategorized()"
+            [title]="(retryingUncategorized() ? 'ranking.retryingButton' : 'ranking.retryButton') | translate"
+            (click)="retryUncategorized()"
+          >
+            <mat-icon [class.spinning]="retryingUncategorized()">refresh</mat-icon>
+          </button>
+        </div>
+        @if (retryMessage()) {
+          <p class="error">{{ retryMessage() }}</p>
+        }
+      }
+
+      <div class="bucket-grid">
+        @for (row of rows(); track row.bucket.id; let i = $index) {
+          <div class="bucket-card">
+            @if (row.bucket.exampleImageUrl) {
+              <img class="card-image" [src]="row.bucket.exampleImageUrl" [alt]="bucketName(row.bucket)" referrerpolicy="no-referrer" />
+            } @else {
+              <div class="card-image placeholder">{{ bucketName(row.bucket).charAt(0) }}</div>
+            }
+
+            <div class="card-body">
+              <div class="name-row">
+                <span class="bucket-name">{{ bucketName(row.bucket) }}</span>
+                <label class="pct-field" [class.invalid]="invalidBucketIds().has(row.bucket.id)">
+                  <input
+                    type="number"
+                    class="pct-input"
+                    min="0"
+                    max="100"
+                    [value]="displayPct(row.pct)"
+                    (change)="setPctManually(i, $any($event.target).valueAsNumber)"
+                  />
+                  <span class="pct-sign">%</span>
+                </label>
+              </div>
+
+              <mat-slider class="slider" min="0" max="100" step="1">
+                <input
+                  matSliderThumb
+                  [value]="displayPct(row.pct)"
+                  (input)="adjust(i, $any($event.target).valueAsNumber)"
+                />
+              </mat-slider>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Pinned to the true browser edge, not the content column — on any
+           normal desktop width that's genuinely empty margin, so it never
+           forces the cards or button to resize/shift to make room for it.
+           On narrow screens it drops back into normal flow below the
+           cards instead (see the max-width:860px rule). -->
+      <aside class="summary-panel">
+        <h2 class="summary-title">{{ 'bucketWeights.summaryTitle' | translate }}</h2>
+        <ul class="summary-list">
+          @for (row of sortedRows(); track row.bucket.id) {
+            <li class="summary-row">
+              <span class="summary-name">{{ bucketName(row.bucket) }}</span>
+              <span class="summary-pct">{{ displayPct(row.pct) }}%</span>
+            </li>
+          }
+        </ul>
+      </aside>
+
+      @if (!canSave()) {
+        <p class="total-hint">{{ 'bucketWeights.totalHint' | translate: { total: precisePct(totalPct()) } }}</p>
+      }
+
+      <button mat-flat-button color="primary" class="save-btn" (click)="save()" [disabled]="saving() || !canSave()">
+        {{ (saving() ? 'bucketWeights.savingButton' : 'bucketWeights.saveButton') | translate }}
+      </button>
+    }
+  </div>
+</div>
