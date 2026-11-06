@@ -1,7 +1,26 @@
 <div class="page">
   <header class="top-bar">
     <span class="top-bar-side"></span>
-    <h1>{{ ranking()?.vacation?.name ?? ('common.ranking' | translate) }}</h1>
+    <span class="title-row">
+      <h1>{{ ranking()?.vacation?.name ?? ('common.ranking' | translate) }}</h1>
+      @if (ranking(); as r) {
+        <span class="budget-info" tabindex="0" (mouseenter)="positionTooltip($event)" (focus)="positionTooltip($event)">
+          <mat-icon class="info-icon">info</mat-icon>
+          <span class="budget-tooltip">
+            {{
+              'ranking.budgetNote'
+                | translate
+                  : {
+                      days: r.vacation.durationDays,
+                      hours: r.vacation.activeHoursPerDay,
+                      budget: r.vacation.budgetHours.toFixed(1),
+                      travel: r.vacation.avgTravelTimeHours
+                    }
+            }}
+          </span>
+        </span>
+      }
+    </span>
     <div class="top-bar-side top-bar-actions">
       @if (userId) {
         <button
@@ -40,23 +59,12 @@
   } @else if (errorMessage()) {
     <p class="error">{{ errorMessage() }}</p>
   } @else if (ranking(); as ranking) {
-    <p class="budget-note">
-      {{
-        'ranking.budgetNote'
-          | translate
-            : {
-                days: ranking.vacation.durationDays,
-                hours: ranking.vacation.activeHoursPerDay,
-                budget: ranking.vacation.budgetHours.toFixed(1),
-                travel: ranking.vacation.avgTravelTimeHours
-              }
-      }}
-    </p>
-
-    <button mat-stroked-button color="primary" class="export-btn" (click)="exportMyMaps()" [disabled]="exporting()">
-      <mat-icon>download</mat-icon>
-      {{ (exporting() ? 'ranking.exportingButton' : 'ranking.exportButton') | translate }}
-    </button>
+    <div class="export-row">
+      <button mat-stroked-button color="primary" class="export-btn" (click)="exportMyMaps()" [disabled]="exporting()">
+        <mat-icon>download</mat-icon>
+        {{ (exporting() ? 'ranking.exportingButton' : 'ranking.exportButton') | translate }}
+      </button>
+    </div>
     @if (exportMessage()) {
       <p class="export-message">{{ exportMessage() }}</p>
     }
@@ -83,7 +91,7 @@
             <span class="bucket-budget">
               {{ 'ranking.bucketBudget' | translate: { budget: bucket.budgetHours.toFixed(1) } }}
               @if (bucket.budgetAdjustments.length > 0) {
-                <span class="budget-info" tabindex="0">
+                <span class="budget-info" tabindex="0" (mouseenter)="positionTooltip($event)" (focus)="positionTooltip($event)">
                   <mat-icon class="info-icon">info</mat-icon>
                   <span class="budget-tooltip">
                     <span class="adj-note">{{ budgetNoteKey(bucket) | translate }}</span>
@@ -216,6 +224,38 @@
           </mat-expansion-panel>
         }
       </mat-accordion>
+    }
+
+    @if (ranking.userWeights.length > 0) {
+      <h2 class="section-title">{{ 'ranking.prioritiesChartTitle' | translate }}</h2>
+      <div class="priorities-chart">
+        <div class="chart-legend">
+          @for (uw of ranking.userWeights; track uw.userId) {
+            <span class="legend-item">
+              <span class="legend-dot" [style.background]="userColor(uw.userId)"></span>
+              {{ uw.userName }}
+            </span>
+          }
+        </div>
+
+        @for (bucket of ranking.buckets; track bucket.bucketId) {
+          @if (bucketWeightBars(bucket); as bars) {
+            @if (bars.length > 0) {
+              <div class="chart-group">
+                <span class="chart-bucket-label">{{ bucketName(bucket) }}</span>
+                @for (bar of bars; track bar.userId) {
+                  <div class="chart-bar-row">
+                    <span class="chart-bar-track">
+                      <span class="chart-bar-fill" [style.width.%]="bar.pct" [style.background]="userColor(bar.userId)"></span>
+                    </span>
+                    <span class="chart-bar-pct">{{ bar.pct | number: '1.0-0' }}%</span>
+                  </div>
+                }
+              </div>
+            }
+          }
+        }
+      </div>
     }
   }
   </div>

@@ -16,6 +16,7 @@ const DICT: Dict = {
   'vacationSelect.title': { en: 'Which vacation are you planning?', de: 'Welche Ferien planst du?' },
   'vacationSelect.addLabel': { en: 'New vacation', de: 'Neue Ferien' },
   'vacationSelect.preparing': { en: 'Preparing…', de: 'Wird vorbereitet…' },
+  'vacationSelect.planning': { en: 'Planning…', de: 'In Planung…' },
   'vacationSelect.placesCountOne': { en: '{count} place', de: '{count} Ort' },
   'vacationSelect.placesCountOther': { en: '{count} places', de: '{count} Orte' },
   'vacationSelect.daysCountOne': { en: '{count} day', de: '{count} Tag' },
@@ -72,15 +73,6 @@ const DICT: Dict = {
     en: 'Avg travel time between places (h)',
     de: 'Ø Reisezeit zwischen Orten (Std.)',
   },
-  'vacationCreate.placesLabel': { en: 'Places or activities you researched (1 per line)', de: 'Mögliche Orte oder Aktivitäten (1 pro Zeile)' },
-  'vacationCreate.placesPlaceholder': {
-    en: 'Eiffel Tower\nLouvre Museum\nMontmartre walking tour',
-    de: 'Eiffelturm\nLouvre\nMontmartre Walking Tour',
-  },
-  'vacationCreate.orUploadFile': {
-    en: 'or upload a .txt file (one place per line):',
-    de: 'oder eine .txt-Datei hochladen (ein Ort pro Zeile):',
-  },
   'vacationCreate.submitButton': { en: 'Create vacation', de: 'Ferien erstellen' },
   'vacationCreate.createError': {
     en: 'Failed to create vacation. Please try again.',
@@ -92,6 +84,50 @@ const DICT: Dict = {
   },
   'vacationCreate.privateLabel': { en: 'Make this vacation private', de: 'Diese Ferien privat machen' },
   'vacationCreate.passwordLabel': { en: 'Password', de: 'Passwort' },
+
+  'vacationPlaces.title': { en: 'Add places to {vacation}', de: 'Orte zu {vacation} hinzufügen' },
+  'vacationPlaces.intro': {
+    en: 'Add places or activities together, at your own pace. Anyone with the link can join in until ranking starts.',
+    de: 'Fügt gemeinsam und in eurem eigenen Tempo Orte oder Aktivitäten hinzu. Jeder mit dem Link kann mitmachen, bis das Ranking startet.',
+  },
+  'vacationPlaces.addLabel': { en: 'Add places (one per line)', de: 'Orte hinzufügen (einer pro Zeile)' },
+  'vacationPlaces.addPlaceholder': {
+    en: 'Eiffel Tower\nLouvre Museum\nMontmartre walking tour',
+    de: 'Eiffelturm\nLouvre\nMontmartre Walking Tour',
+  },
+  'vacationPlaces.addButton': { en: 'Add', de: 'Hinzufügen' },
+  'vacationPlaces.addingButton': { en: 'Adding…', de: 'Wird hinzugefügt…' },
+  'vacationPlaces.editAction': { en: 'Rename', de: 'Umbenennen' },
+  'vacationPlaces.deleteAction': { en: 'Delete', de: 'Löschen' },
+  'vacationPlaces.noPlaces': { en: 'No places yet — add some below.', de: 'Noch keine Orte — unten hinzufügen.' },
+  'vacationPlaces.conflictError': {
+    en: 'This was changed by someone else — refreshed with the latest.',
+    de: 'Wurde von jemand anderem geändert — mit dem neuesten Stand aktualisiert.',
+  },
+  'vacationPlaces.mutationError': {
+    en: 'That didn\'t work. Please try again.',
+    de: 'Das hat nicht funktioniert. Bitte erneut versuchen.',
+  },
+  'vacationPlaces.prefsTitle': { en: 'Trip pacing', de: 'Reisetempo' },
+  'vacationPlaces.prefsNote': {
+    en: 'Your own preference — the trip uses the median of everyone who submits one before ranking starts.',
+    de: 'Deine eigene Einschätzung — die Reise nutzt den Median aller, die vor dem Start des Rankings etwas eintragen.',
+  },
+  'vacationPlaces.startRankingButton': { en: 'Start ranking', de: 'Ranking starten' },
+  'vacationPlaces.startingButton': { en: 'Starting…', de: 'Wird gestartet…' },
+  'vacationPlaces.needTwoPlaces': {
+    en: 'At least 2 places are needed to start ranking.',
+    de: 'Mindestens 2 Orte werden benötigt, um das Ranking zu starten.',
+  },
+  'vacationPlaces.confirmTitle': { en: 'Start ranking?', de: 'Ranking starten?' },
+  'vacationPlaces.confirmWarning': {
+    en: 'From here on, places and the trip pacing preferences can no longer be edited. Everyone can still weigh, rank, and veto once it\'s ready.',
+    de: 'Ab jetzt können Orte und die Reisetempo-Einstellungen nicht mehr geändert werden. Sobald alles bereit ist, können weiterhin alle gewichten, ranken und Vetos einlegen.',
+  },
+  'vacationPlaces.startRankingError': {
+    en: 'Could not start ranking. Please try again.',
+    de: 'Ranking konnte nicht gestartet werden. Bitte erneut versuchen.',
+  },
 
   'vacationUnlock.title': { en: '"{vacation}" is private', de: '„{vacation}" ist privat' },
   'vacationUnlock.hint': { en: 'Enter the password to continue.', de: 'Gib das Passwort ein, um fortzufahren.' },
@@ -122,7 +158,7 @@ const DICT: Dict = {
     en: 'Trip budget: {days} days × ({hours}h active − 1h tolerance) ≈ {budget}h total, split across categories below by everyone\'s priorities.',
     de: 'Reisebudget: {days} Tage × ({hours} Std. aktiv − 1 Std. Toleranz) ≈ {budget} Std. insgesamt, aufgeteilt auf die Kategorien unten gemäss den Prioritäten aller.',
   },
-  'ranking.bucketBudget': { en: '{budget}h budget for this category', de: '{budget} Std. Budget für diese Kategorie' },
+  'ranking.bucketBudget': { en: '{budget}h budget', de: '{budget} Std. Budget' },
   'ranking.budgetDonorNote': { en: 'Everything fits — spare hours were shared.', de: 'Alles passt — übrige Stunden geteilt.' },
   'ranking.budgetRecipientNote': { en: "Didn't fit alone — topped up from elsewhere.", de: 'Passte nicht allein — mit Stunden aufgefüllt.' },
   'ranking.budgetExplainerTitle': { en: 'What is happening here?', de: 'Was passiert hier?' },
@@ -161,6 +197,7 @@ const DICT: Dict = {
     de: 'Veto: sichert diesem Ort einen Platz im Zeitbudget, auch vor höher platzierten Orten',
   },
   'ranking.personalRankings': { en: 'Personal rankings', de: 'Persönliche Ranglisten' },
+  'ranking.prioritiesChartTitle': { en: "Everyone's priorities", de: 'Prioritäten' },
   'ranking.voteCastOne': { en: '{count} vote cast', de: '{count} Stimme abgegeben' },
   'ranking.voteCastOther': { en: '{count} votes cast', de: '{count} Stimmen abgegeben' },
   'ranking.noPlacesYet': { en: 'No places to rank yet.', de: 'Noch keine Orte zum Ranken.' },

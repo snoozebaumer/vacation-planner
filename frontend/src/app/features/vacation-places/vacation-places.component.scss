@@ -1,0 +1,253 @@
+.page {
+  min-height: 100vh;
+  padding: 1.5rem 2rem 3rem;
+}
+
+.center-fill,
+.page-center {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.top-bar {
+  display: grid;
+  grid-template-columns: 1fr minmax(0, auto) 1fr;
+  align-items: center;
+  column-gap: 1rem;
+  margin-bottom: 0.5rem;
+
+  h1 {
+    grid-column: 2;
+    color: #01579b;
+    margin: 0;
+    text-align: center;
+  }
+}
+
+.top-bar-spacer {
+  justify-self: end;
+}
+
+.content {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.intro {
+  color: rgba(1, 87, 155, 0.75);
+  font-size: 0.85rem;
+  margin: 0 auto 1.5rem;
+  text-align: center;
+}
+
+.error {
+  color: #c62828;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+// Same share-link box as user-select's, reused here so it's visible right
+// where people are actively adding places together.
+.share-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.share-label {
+  font-size: 0.85rem;
+  color: rgba(1, 87, 155, 0.75);
+}
+
+.share-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 420px;
+}
+
+.share-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  border-radius: 999px;
+  padding: 0.6rem 1rem;
+  font-size: 0.85rem;
+  font-family: inherit;
+  color: #01579b;
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 2px 8px rgba(2, 60, 90, 0.12);
+
+  &:focus {
+    outline: none;
+    background: #fff;
+  }
+}
+
+.copy-btn {
+  flex-shrink: 0;
+  color: #01579b;
+}
+
+.places-card,
+.prefs-card {
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.25rem;
+
+  h2 {
+    margin: 0 0 0.25rem;
+    color: #01579b;
+    font-size: 1rem;
+  }
+}
+
+.place-list {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+}
+
+.place-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid rgba(2, 136, 209, 0.1);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.place-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #01579b;
+}
+
+.edit-input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid rgba(2, 136, 209, 0.4);
+  border-radius: 6px;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: #01579b;
+
+  &:focus {
+    outline: none;
+    border-color: #0288d1;
+  }
+}
+
+.no-places {
+  color: rgba(1, 87, 155, 0.6);
+  font-size: 0.85rem;
+  padding: 0.5rem 0;
+}
+
+.add-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.prefs-note {
+  font-size: 0.8rem;
+  color: rgba(1, 87, 155, 0.7);
+  margin: 0 0 0.75rem;
+}
+
+.prefs-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+
+  mat-form-field {
+    flex: 1 1 160px;
+  }
+}
+
+.start-btn {
+  display: block;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.hint {
+  text-align: center;
+  font-size: 0.8rem;
+  color: rgba(1, 87, 155, 0.6);
+  margin-top: 0.5rem;
+}
+
+// Same overlay/dialog/warning/actions confirmation pattern as
+// vacation-select's delete-vacation dialog — duplicated per-component per
+// this codebase's existing convention (no shared partial today).
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(1, 41, 74, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.dialog {
+  width: 340px;
+  padding: 1.5rem;
+
+  h2 {
+    margin-top: 0;
+    color: #01579b;
+    font-size: 1.1rem;
+  }
+}
+
+.warning {
+  font-size: 0.85rem;
+  color: rgba(1, 87, 155, 0.75);
+  margin: 0 0 1rem;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.progress-card {
+  width: 100%;
+  max-width: 640px;
+  padding: 2rem;
+  text-align: center;
+
+  h1 {
+    color: #01579b;
+    margin-top: 0;
+  }
+
+  mat-progress-bar {
+    margin: 1.5rem 0 1rem;
+  }
+
+  .eta {
+    color: rgba(1, 87, 155, 0.75);
+  }
+}

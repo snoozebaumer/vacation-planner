@@ -47,6 +47,12 @@ export class VacationSelectComponent implements OnInit {
       if (v.status === 'creating') {
         return { id: v.id, label: v.name, subLabel: this.i18n.t('vacationSelect.preparing'), locked: v.hasPassword };
       }
+      // places_total is meaningless mid-draft (0 until start-ranking
+      // recomputes it), so this skips the normal places/days/date line the
+      // same way 'creating' does, rather than showing a misleading "0 places".
+      if (v.status === 'draft') {
+        return { id: v.id, label: v.name, subLabel: this.i18n.t('vacationSelect.planning'), locked: v.hasPassword };
+      }
 
       // Two same-named vacations are only going to become more common —
       // the creation date is always available and disambiguates them

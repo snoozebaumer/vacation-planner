@@ -39,4 +39,13 @@ body {
 * {
   box-sizing: border-box;
 }
+
+// body's `font: var(--mat-sys-body-medium)` shorthand above sets line-height
+// too, sized for small body text — every h1 across the app inherits that
+// same small absolute value unless overridden, which looks fine for a
+// single line but cramped once a long/interpolated title (a vacation name,
+// etc.) wraps to two lines on a narrow screen.
+h1 {
+  line-height: 1;
+}
 /* You can add global styles to this file, and also import other style files */

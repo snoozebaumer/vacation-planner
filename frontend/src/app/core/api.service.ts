@@ -6,7 +6,10 @@ import {
   BucketWeight,
   MatchupResponse,
   MyMapsExportResponse,
+  Place,
+  PlacesResponse,
   RankingResponse,
+  TripPrefs,
   Vacation,
   VacationUser,
 } from './models';
@@ -25,8 +28,41 @@ export class ApiService {
     return this.http.get<Vacation>(`${this.base}/vacations/${vacationId}`);
   }
 
-  createVacation(form: FormData): Observable<Vacation> {
-    return this.http.post<Vacation>(`${this.base}/vacations`, form);
+  createVacation(name: string, durationDays: number, password?: string): Observable<Vacation> {
+    return this.http.post<Vacation>(`${this.base}/vacations`, { name, durationDays, password });
+  }
+
+  startRanking(vacationId: string): Observable<Vacation> {
+    return this.http.post<Vacation>(`${this.base}/vacations/${vacationId}/start-ranking`, {});
+  }
+
+  listPlaces(vacationId: string): Observable<PlacesResponse> {
+    return this.http.get<PlacesResponse>(`${this.base}/vacations/${vacationId}/places`);
+  }
+
+  addPlaces(vacationId: string, text: string): Observable<{ created: Place[]; skipped: number }> {
+    return this.http.post<{ created: Place[]; skipped: number }>(`${this.base}/vacations/${vacationId}/places`, { text });
+  }
+
+  renamePlace(vacationId: string, placeId: string, name: string, expectedUpdatedAt: string): Observable<Place> {
+    return this.http.patch<Place>(`${this.base}/vacations/${vacationId}/places/${placeId}`, {
+      name,
+      expectedUpdatedAt,
+    });
+  }
+
+  deletePlace(vacationId: string, placeId: string): Observable<{ ok: boolean }> {
+    return this.http.delete<{ ok: boolean }>(`${this.base}/vacations/${vacationId}/places/${placeId}`);
+  }
+
+  getTripPrefs(vacationId: string, userId: string): Observable<{ prefs: TripPrefs | null }> {
+    return this.http.get<{ prefs: TripPrefs | null }>(
+      `${this.base}/vacations/${vacationId}/users/${userId}/trip-prefs`
+    );
+  }
+
+  setTripPrefs(vacationId: string, userId: string, prefs: TripPrefs): Observable<{ ok: boolean }> {
+    return this.http.put<{ ok: boolean }>(`${this.base}/vacations/${vacationId}/users/${userId}/trip-prefs`, prefs);
   }
 
   getVacationPhotoUrls(vacationId: string): Observable<{ photoUrls: string[] }> {

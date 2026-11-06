@@ -6,6 +6,7 @@ import { BucketWeightsComponent } from './features/bucket-weights/bucket-weights
 import { MatchupComponent } from './features/matchup/matchup.component';
 import { RankingComponent } from './features/ranking/ranking.component';
 import { VacationUnlockComponent } from './features/vacation-unlock/vacation-unlock.component';
+import { VacationPlacesComponent } from './features/vacation-places/vacation-places.component';
 
 export const routes: Routes = [
   { path: '', component: VacationSelectComponent },
@@ -17,6 +18,7 @@ export const routes: Routes = [
   { path: 'vacations/:vacationId', pathMatch: 'full', redirectTo: 'vacations/:vacationId/users' },
   { path: 'vacations/:vacationId/unlock', component: VacationUnlockComponent },
   { path: 'vacations/:vacationId/users', component: UserSelectComponent },
+  { path: 'vacations/:vacationId/users/:userId/places', component: VacationPlacesComponent },
   { path: 'vacations/:vacationId/users/:userId/priorities', component: BucketWeightsComponent },
   { path: 'vacations/:vacationId/users/:userId/play', component: MatchupComponent },
   { path: 'vacations/:vacationId/ranking', component: RankingComponent },

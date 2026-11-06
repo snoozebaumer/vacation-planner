@@ -10,6 +10,7 @@ import { ApiService } from '../../core/api.service';
 import { I18nService } from '../../core/i18n.service';
 import { TranslatePipe } from '../../core/translate.pipe';
 import { CarouselTile, TileCarouselComponent } from '../../shared/tile-carousel/tile-carousel.component';
+import { Vacation } from '../../core/models';
 
 @Component({
   selector: 'app-user-select',
@@ -29,6 +30,7 @@ import { CarouselTile, TileCarouselComponent } from '../../shared/tile-carousel/
 export class UserSelectComponent implements OnInit {
   tiles = signal<CarouselTile[]>([]);
   vacationName = signal('');
+  private vacationStatus = signal<Vacation['status'] | null>(null);
   loading = signal(true);
   showAddDialog = signal(false);
   creating = signal(false);
@@ -51,7 +53,10 @@ export class UserSelectComponent implements OnInit {
     this.vacationId = this.route.snapshot.paramMap.get('vacationId')!;
 
     this.api.getVacation(this.vacationId).subscribe({
-      next: (v) => this.vacationName.set(v.name),
+      next: (v) => {
+        this.vacationName.set(v.name);
+        this.vacationStatus.set(v.status);
+      },
       error: () => this.router.navigate(['/']),
     });
 
@@ -68,11 +73,18 @@ export class UserSelectComponent implements OnInit {
     });
   }
 
-  // Only sent through the priorities screen the first time — once they've
-  // saved weights at least once, later re-entries go straight to dueling.
-  // They can still get back to priorities anytime via the "tune" icon on
-  // the matchup/ranking pages.
+  // Still-draft vacations skip weighing/dueling entirely — everyone lands on
+  // the collaborative places screen instead, until someone hits Start
+  // Ranking. Only sent through the priorities screen the first time
+  // afterward — once they've saved weights at least once, later re-entries
+  // go straight to dueling. They can still get back to priorities anytime
+  // via the "tune" icon on the matchup/ranking pages.
   onSelect(userId: string): void {
+    if (this.vacationStatus() === 'draft') {
+      this.router.navigate(['/vacations', this.vacationId, 'users', userId, 'places']);
+      return;
+    }
+
     this.api.getBucketWeights(this.vacationId, userId).subscribe({
       next: ({ weights }) => {
         const nextStep = weights.length > 0 ? 'play' : 'priorities';

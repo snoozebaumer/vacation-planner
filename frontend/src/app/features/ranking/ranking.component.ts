@@ -8,7 +8,11 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { ApiService } from '../../core/api.service';
 import { I18nService } from '../../core/i18n.service';
 import { TranslatePipe } from '../../core/translate.pipe';
-import { RankingResponse } from '../../core/models';
+import { BucketRanking, RankingResponse } from '../../core/models';
+
+// Cycled by index in ranking.userWeights — small and fixed rather than
+// generated, since a family-trip vacation only ever has a handful of users.
+const USER_COLORS = ['#0288d1', '#e91e63', '#43a047', '#fb8c00', '#8e24aa', '#00897b', '#c62828'];
 
 function slugify(text: string): string {
   return text
@@ -94,8 +98,51 @@ export class RankingComponent implements OnInit {
     return this.i18n.currentLang() === 'de' ? b.nameDe : b.nameEn;
   }
 
+  // The tooltip is plain CSS-positioned (centered above its icon) by
+  // default, which has no idea where the viewport edges are — right next to
+  // the page title near the very top, "above" has nowhere to go and gets
+  // clipped. Measured here instead of guessed in CSS: visibility:hidden
+  // (not display:none) keeps the tooltip in the layout even while closed,
+  // so its real rendered size is measurable before it's ever shown, same
+  // approach already used for the tile carousel's context menu clamping.
+  positionTooltip(event: Event): void {
+    const wrapper = event.currentTarget as HTMLElement;
+    const tooltip = wrapper.querySelector<HTMLElement>('.budget-tooltip');
+    if (!tooltip) return;
+
+    const margin = 8;
+    const iconRect = wrapper.getBoundingClientRect();
+    const tooltipRect = tooltip.getBoundingClientRect();
+
+    tooltip.classList.toggle('tooltip-below', iconRect.top - tooltipRect.height - margin < 0);
+
+    const centeredLeft = iconRect.left + iconRect.width / 2 - tooltipRect.width / 2;
+    const overflowsLeft = centeredLeft < margin;
+    const overflowsRight = centeredLeft + tooltipRect.width > window.innerWidth - margin;
+    tooltip.classList.toggle('tooltip-align-left', overflowsLeft && !overflowsRight);
+    tooltip.classList.toggle('tooltip-align-right', overflowsRight && !overflowsLeft);
+  }
+
   adjustmentBucketName(adj: { otherBucketNameEn: string; otherBucketNameDe: string }): string {
     return this.i18n.currentLang() === 'de' ? adj.otherBucketNameDe : adj.otherBucketNameEn;
+  }
+
+  userColor(userId: string): string {
+    const idx = this.ranking()?.userWeights.findIndex((u) => u.userId === userId) ?? -1;
+    return USER_COLORS[Math.max(idx, 0) % USER_COLORS.length];
+  }
+
+  // Only users who actually weighed in on this specific bucket get a bar —
+  // a 0%-wide bar for someone who left it untouched would just be dead
+  // vertical space with nothing to show for it.
+  bucketWeightBars(bucket: BucketRanking): { userId: string; userName: string; pct: number }[] {
+    return (this.ranking()?.userWeights ?? [])
+      .map((uw) => ({
+        userId: uw.userId,
+        userName: uw.userName,
+        pct: uw.weights.find((w) => w.bucketId === bucket.bucketId)?.weightPct ?? 0,
+      }))
+      .filter((w) => w.pct > 0);
   }
 
   // A bucket's adjustments are always all-negative (donor) or all-positive

@@ -1,6 +1,7 @@
 import { pool } from "../db/pool";
 import { computeUserRankings, FavoriteBadge, UserRanking } from "./userRankings";
 import { ensureBucketsForVacation, getActiveBuckets } from "./bucketAssignment";
+import { median } from "../util/stats";
 
 export interface VetoInfo {
   userId: string;
@@ -44,6 +45,12 @@ export interface BucketRanking {
   budgetAdjustments: BudgetAdjustment[];
 }
 
+export interface UserBucketWeights {
+  userId: string;
+  userName: string;
+  weights: { bucketId: string; weightPct: number }[];
+}
+
 export interface RankingResult {
   vacation: {
     id: string;
@@ -56,14 +63,10 @@ export interface RankingResult {
   };
   buckets: BucketRanking[];
   userRankings: UserRanking[];
+  userWeights: UserBucketWeights[];
   myVeto: { placeId: string } | null;
 }
 
-function median(values: number[]): number {
-  const sorted = [...values].sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
-}
 
 // A bucket's time budget is the MEDIAN weight percentage among users who
 // have actually submitted their priority sliders for this vacation, applied
@@ -234,6 +237,32 @@ export async function computeRanking(vacationId: string, forUserId?: string | nu
 
   const { userRankings, favoritesByPlace } = await computeUserRankings(vacationId);
 
+  // Raw per-user weights, for the "everyone's priorities" chart — separate
+  // from computeBucketBudgets' own query above, which only ever needed the
+  // values themselves (for the median), never who submitted which one.
+  const { rows: weightRows } = await pool.query<{
+    user_id: string;
+    user_name: string;
+    bucket_id: string;
+    weight_pct: string;
+  }>(
+    `SELECT bw.user_id, u.name AS user_name, bw.bucket_id, bw.weight_pct
+     FROM bucket_weights bw JOIN users u ON u.id = bw.user_id
+     WHERE bw.vacation_id = $1
+     ORDER BY u.created_at ASC`,
+    [vacationId]
+  );
+  const userWeightsMap = new Map<string, UserBucketWeights>();
+  for (const r of weightRows) {
+    let entry = userWeightsMap.get(r.user_id);
+    if (!entry) {
+      entry = { userId: r.user_id, userName: r.user_name, weights: [] };
+      userWeightsMap.set(r.user_id, entry);
+    }
+    entry.weights.push({ bucketId: r.bucket_id, weightPct: Number(r.weight_pct) });
+  }
+  const userWeights = [...userWeightsMap.values()];
+
   const totalBudgetHours = Number(vacation.duration_days) * (Number(vacation.active_hours_per_day) - 1);
   const travelHours = Number(vacation.avg_travel_time_hours);
   const bucketBudgets = await computeBucketBudgets(vacationId, bucketRows, totalBudgetHours);
@@ -383,6 +412,7 @@ export async function computeRanking(vacationId: string, forUserId?: string | nu
     },
     buckets,
     userRankings,
+    userWeights,
     myVeto: myVetoRow ? { placeId: myVetoRow.place_id } : null,
   };
 }

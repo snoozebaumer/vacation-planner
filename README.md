@@ -1,22 +1,20 @@
 # VacationPlanner
 
 A gamified, Elo-based duel tournament for deciding where to go (and what to do) on a trip.
-Enter all the places (and activities) you've been considering and invite your friends, the game will handle all
-the rest and research place descritions, recommended visit length and images representing them.
+Enter all the places (and activities) you've been considering and invite your friends, the game will handle all the rest and research place descriptions, recommended visit length and images representing them.
 
 Two places face off, you pick your favorite, and over enough rounds a ranking emerges —
 with an automatic cutoff line showing what actually fits in your trip's schedule.
 
 ## Stack
 
-- **Frontend**: Angular 22 (standalone components) + Angular Material, served via nginx
+- **Frontend**: Angular 22, served via nginx
 - **Backend**: Node.js/Express + TypeScript
 - **Database**: PostgreSQL
-- **Local LLM**: [Ollama](https://ollama.com), run natively on the host, running
-  `qwen2.5:7b-instruct`, used to research how long each place/activity takes
+- **Local LLM**: [Ollama](https://ollama.com), has to run natively on the host (docker container is terrible in my experience since it cannot access GPU), running `qwen2.5:7b-instruct`, used to research how long each place/activity takes
 - **Web search for the LLM**: a self-hosted [SearxNG](https://docs.searxng.org/) instance (no API
   keys, no external service accounts needed). The backend runs the search itself and hands the
-  LLM the resulting snippets in a single prompt — see [Why not an agentic tool-calling loop?](#why-not-an-agentic-tool-calling-loop)
+  LLM the resulting snippets in a single prompt.
 - **Photos**: best-effort, key-free image lookup via DuckDuckGo's image search, scored by
   relevance and how close the image's aspect ratio is to the card format
 
@@ -26,8 +24,7 @@ Everything runs from a single `docker-compose.yml` — no cloud accounts or API 
 
 - Docker and Docker Compose (Docker Desktop on Mac/Windows, or Docker Engine + the `compose`
   plugin on Linux)
-- [Ollama](https://ollama.com) installed **natively on the host** (not in Docker — see
-  [Why not an agentic tool-calling loop?](#why-not-an-agentic-tool-calling-loop) for why), with the
+- [Ollama](https://ollama.com) installed **natively on the host**, with the
   model pulled once:
   ```bash
   ollama pull qwen2.5:7b-instruct
@@ -117,8 +114,3 @@ npm start   # proxies /api to localhost:3000 via proxy.conf.json
   handled gracefully (placeholder image, fallback duration estimate).
 - This app is intended for internal/personal use — there's no authentication; anyone who knows a
   vacation exists can join it and add themselves as a player. There is the possibility of adding a password to your vacation though.
-- SearxNG may log `ERROR:searx.botdetection: X-Forwarded-For nor X-Real-IP header is set!` — this
-  is expected since the backend talks to it directly with no reverse proxy in front, and is
-  harmless (`limiter: false` in `searxng/settings.yml` disables bot-detection/rate-limiting
-  entirely, so it doesn't block anything). If you ever put SearxNG behind a reverse proxy, that
-  proxy should set `X-Real-IP` for this warning to go away.

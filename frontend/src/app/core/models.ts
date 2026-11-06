@@ -2,9 +2,11 @@ export interface Vacation {
   id: string;
   name: string;
   duration_days: number;
-  active_hours_per_day: number;
-  avg_travel_time_hours: number;
-  status: 'creating' | 'ready' | 'failed';
+  // Null throughout 'draft' — collected collaboratively (see TripPrefs) and
+  // filled in as the median of everyone's submission once start-ranking fires.
+  active_hours_per_day: number | null;
+  avg_travel_time_hours: number | null;
+  status: 'draft' | 'creating' | 'ready' | 'failed';
   places_total: number;
   places_processed: number;
   avg_place_process_seconds: number | null;
@@ -12,6 +14,22 @@ export interface Vacation {
   eta_seconds?: number | null;
   hasPassword: boolean;
   first_user_name: string | null;
+}
+
+export interface Place {
+  id: string;
+  name: string;
+  updatedAt: string;
+}
+
+export interface PlacesResponse {
+  vacationStatus: Vacation['status'];
+  places: Place[];
+}
+
+export interface TripPrefs {
+  activeHoursPerDay: number;
+  avgTravelTimeHours: number;
 }
 
 export interface VacationUser {
@@ -119,6 +137,12 @@ export interface BucketRanking {
   budgetAdjustments: BudgetAdjustment[];
 }
 
+export interface UserBucketWeights {
+  userId: string;
+  userName: string;
+  weights: { bucketId: string; weightPct: number }[];
+}
+
 export interface RankingResponse {
   vacation: {
     id: string;
@@ -130,6 +154,7 @@ export interface RankingResponse {
   };
   buckets: BucketRanking[];
   userRankings: UserRanking[];
+  userWeights: UserBucketWeights[];
   myVeto: { placeId: string } | null;
 }
 

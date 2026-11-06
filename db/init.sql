@@ -2,17 +2,22 @@
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
+-- Lifecycle: draft (places/trip-prefs being collected collaboratively, no
+-- research yet) -> creating (research/classification running) -> ready |
+-- failed. active_hours_per_day/avg_travel_time_hours are NULL through
+-- draft — they're filled in at start-ranking time from the median of
+-- vacation_trip_prefs, not collected at creation anymore.
 CREATE TABLE vacations (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name            TEXT NOT NULL,
     duration_days   NUMERIC NOT NULL,
-    active_hours_per_day NUMERIC NOT NULL,
-    avg_travel_time_hours NUMERIC NOT NULL DEFAULT 0.25,
-    status          TEXT NOT NULL DEFAULT 'creating', -- creating | ready | failed
+    active_hours_per_day NUMERIC,
+    avg_travel_time_hours NUMERIC,
+    status          TEXT NOT NULL DEFAULT 'draft', -- draft | creating | ready | failed
     places_total    INTEGER NOT NULL DEFAULT 0,
     places_processed INTEGER NOT NULL DEFAULT 0,
     avg_place_process_seconds NUMERIC,
-    location_context TEXT, -- smallest common location for all places (e.g. "Bern"), inferred once per vacation
+    location_context TEXT, -- smallest common location for all places (e.g. "Bern"), re-inferred each research batch
     password_hash   TEXT, -- "salt:hash" (scrypt), NULL = not password-protected
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -50,7 +55,12 @@ CREATE TABLE places (
     photo_url       TEXT,
     photo_aspect_ratio NUMERIC,
     photo_status    TEXT NOT NULL DEFAULT 'pending', -- pending | done | failed
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+    -- (3) = millisecond precision, matching JS Date/JSON round-trip exactly —
+    -- the frontend round-trips this value back in PATCH requests as an
+    -- optimistic-concurrency guard, and a plain TIMESTAMPTZ's microsecond
+    -- precision would silently never compare equal after that round-trip.
+    updated_at      TIMESTAMPTZ(3) NOT NULL DEFAULT now()
 );
 
 CREATE INDEX idx_places_vacation ON places(vacation_id);
@@ -119,3 +129,17 @@ CREATE TABLE bucket_weights (
 );
 
 CREATE INDEX idx_bucket_weights_lookup ON bucket_weights(vacation_id, user_id);
+
+-- Same shape/idea as bucket_weights, but for the two trip-pacing knobs that
+-- used to be fixed at creation time. Draft-phase only (see routes/tripPrefs.ts)
+-- — the median across whoever submitted becomes vacations.active_hours_per_day
+-- / avg_travel_time_hours at start-ranking time. Anyone who joins after
+-- ranking has started never gets a row here, matching "no say" for latecomers.
+CREATE TABLE vacation_trip_prefs (
+    vacation_id            UUID NOT NULL REFERENCES vacations(id) ON DELETE CASCADE,
+    user_id                UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    active_hours_per_day   NUMERIC NOT NULL,
+    avg_travel_time_hours  NUMERIC NOT NULL,
+    updated_at             TIMESTAMPTZ NOT NULL DEFAULT now(),
+    PRIMARY KEY (vacation_id, user_id)
+);

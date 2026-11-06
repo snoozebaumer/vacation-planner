@@ -1,20 +1,11 @@
 import { Router, RequestHandler } from "express";
-import multer from "multer";
 import { pool } from "../db/pool";
-import { processVacation } from "../jobs/processVacation";
+import { triggerFinalBatch } from "../jobs/researchScheduler";
 import { hashPassword, verifyPassword, signUnlockToken } from "../services/vacationAuth";
 import { requireVacationUnlock } from "../middleware/vacationLock";
+import { median } from "../util/stats";
 
 export const vacationsRouter = Router();
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 1024 * 1024 } });
-
-function parsePlaceNames(raw: string): string[] {
-  const names = raw
-    .split(/\r?\n|,/)
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0);
-  return Array.from(new Set(names));
-}
 
 // Never send password_hash to the client — hasPassword is all the frontend
 // needs to know whether to show the unlock screen.
@@ -109,61 +100,100 @@ const deleteVacation: RequestHandler<{ id: string }> = async (req, res) => {
 };
 vacationsRouter.delete("/:id", deleteVacation);
 
-vacationsRouter.post("/", upload.single("placesFile"), async (req, res) => {
+// Just the shell — name and duration. Places and the active-hours/travel-
+// time pacing preferences are now collected collaboratively afterward (see
+// routes/places.ts, routes/tripPrefs.ts) rather than all at once here, so
+// the vacation can be shared and joined the moment it exists.
+vacationsRouter.post("/", async (req, res) => {
   try {
     const name = String(req.body.name ?? "").trim();
     const durationDays = Number(req.body.durationDays);
-    const activeHoursPerDay = Number(req.body.activeHoursPerDay);
-    const avgTravelTimeHours =
-      req.body.avgTravelTimeHours !== undefined && req.body.avgTravelTimeHours !== ""
-        ? Number(req.body.avgTravelTimeHours)
-        : 0.25;
     const password = String(req.body.password ?? "").trim();
 
     if (name.length < 3 || name.length > 100)
       return res.status(400).json({ error: "Vacation name must be between 3 and 100 characters" });
     if (!Number.isFinite(durationDays) || durationDays <= 0)
       return res.status(400).json({ error: "durationDays must be a positive number" });
-    if (!Number.isFinite(activeHoursPerDay) || activeHoursPerDay <= 0 || activeHoursPerDay > 24)
-      return res.status(400).json({ error: "activeHoursPerDay must be a positive number, at most 24" });
-    if (!Number.isFinite(avgTravelTimeHours) || avgTravelTimeHours < 0)
-      return res.status(400).json({ error: "avgTravelTimeHours must be a non-negative number" });
-
-    const rawPlaces = req.file ? req.file.buffer.toString("utf-8") : String(req.body.placesText ?? "");
-    const placeNames = parsePlaceNames(rawPlaces);
-    if (placeNames.length < 2)
-      return res.status(400).json({ error: "At least 2 places are required to create a ranking" });
 
     const passwordHash = password ? hashPassword(password) : null;
 
-    const client = await pool.connect();
-    try {
-      await client.query("BEGIN");
-      const { rows: vacationRows } = await client.query(
-        `INSERT INTO vacations (name, duration_days, active_hours_per_day, avg_travel_time_hours, places_total, password_hash)
-         VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-        [name, durationDays, activeHoursPerDay, avgTravelTimeHours, placeNames.length, passwordHash]
-      );
-      const vacation = vacationRows[0];
-
-      for (const placeName of placeNames) {
-        await client.query("INSERT INTO places (vacation_id, name) VALUES ($1, $2)", [vacation.id, placeName]);
-      }
-
-      await client.query("COMMIT");
-      res.status(201).json(toPublicVacation(vacation));
-
-      processVacation(vacation.id).catch((err) => {
-        console.error(`[vacations] background processing failed for ${vacation.id}:`, err);
-      });
-    } catch (err) {
-      await client.query("ROLLBACK");
-      throw err;
-    } finally {
-      client.release();
-    }
+    const { rows } = await pool.query(
+      `INSERT INTO vacations (name, duration_days, password_hash) VALUES ($1, $2, $3) RETURNING *`,
+      [name, durationDays, passwordHash]
+    );
+    res.status(201).json(toPublicVacation(rows[0]));
   } catch (err) {
     console.error("[vacations] create failed:", err);
     res.status(500).json({ error: "Failed to create vacation" });
   }
 });
+
+// Locks in the collaboratively-built places list and pacing preferences,
+// and kicks off the (now possibly-already-partially-done, thanks to the
+// draft-phase research batching) research/classification pipeline. Row-
+// locked and re-checks status='draft' for the same reason every places.ts
+// route does — a duplicate/stale click just gets a clean "already started"
+// response instead of erroring or double-firing the pipeline.
+const DEFAULT_ACTIVE_HOURS_PER_DAY = 8;
+const DEFAULT_AVG_TRAVEL_TIME_HOURS = 0.25;
+
+const startRanking: RequestHandler<{ id: string }> = async (req, res) => {
+  const { id } = req.params;
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const { rows: vacationRows } = await client.query<{ status: string }>(
+      "SELECT status FROM vacations WHERE id = $1 FOR UPDATE",
+      [id]
+    );
+    if (vacationRows.length === 0) {
+      await client.query("ROLLBACK");
+      return void res.status(404).json({ error: "Vacation not found" });
+    }
+    if (vacationRows[0].status !== "draft") {
+      await client.query("ROLLBACK");
+      return void res.status(409).json({ error: "Ranking has already started" });
+    }
+
+    const { rows: countRows } = await client.query<{ count: string }>(
+      "SELECT count(*) FROM places WHERE vacation_id = $1",
+      [id]
+    );
+    const placeCount = Number(countRows[0].count);
+    if (placeCount < 2) {
+      await client.query("ROLLBACK");
+      return void res.status(400).json({ error: "At least 2 places are required to start ranking" });
+    }
+
+    const { rows: prefRows } = await client.query<{ active_hours_per_day: string; avg_travel_time_hours: string }>(
+      "SELECT active_hours_per_day, avg_travel_time_hours FROM vacation_trip_prefs WHERE vacation_id = $1",
+      [id]
+    );
+    const activeHoursPerDay =
+      prefRows.length > 0 ? median(prefRows.map((r) => Number(r.active_hours_per_day))) : DEFAULT_ACTIVE_HOURS_PER_DAY;
+    const avgTravelTimeHours =
+      prefRows.length > 0
+        ? median(prefRows.map((r) => Number(r.avg_travel_time_hours)))
+        : DEFAULT_AVG_TRAVEL_TIME_HOURS;
+
+    const { rows: updatedRows } = await client.query(
+      `UPDATE vacations SET status = 'creating', places_total = $1, active_hours_per_day = $2, avg_travel_time_hours = $3
+       WHERE id = $4 RETURNING *`,
+      [placeCount, activeHoursPerDay, avgTravelTimeHours, id]
+    );
+    await client.query("COMMIT");
+    res.json(toPublicVacation(updatedRows[0]));
+
+    triggerFinalBatch(id).catch((err) => {
+      console.error(`[vacations] final research batch failed for ${id}:`, err);
+    });
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.error("[vacations] start-ranking failed:", err);
+    res.status(500).json({ error: "Failed to start ranking" });
+  } finally {
+    client.release();
+  }
+};
+vacationsRouter.post("/:id/start-ranking", startRanking);

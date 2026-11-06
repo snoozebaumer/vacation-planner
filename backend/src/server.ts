@@ -10,6 +10,8 @@ import { exportRouter } from "./routes/exportMyMaps";
 import { vetoRouter } from "./routes/veto";
 import { bucketsRouter, bucketWeightsRouter } from "./routes/bucketWeights";
 import { placeSuggestionsRouter } from "./routes/placeSuggestions";
+import { placesRouter } from "./routes/places";
+import { tripPrefsRouter } from "./routes/tripPrefs";
 import { requireVacationUnlock } from "./middleware/vacationLock";
 
 const app = express();
@@ -47,6 +49,8 @@ app.use("/api/vacations/:vacationId/users", requireVacationUnlock(), usersRouter
 app.use("/api/vacations/:vacationId/users/:userId", requireVacationUnlock(), matchupRouter);
 app.use("/api/vacations/:vacationId/users/:userId", requireVacationUnlock(), vetoRouter);
 app.use("/api/vacations/:vacationId/users/:userId", requireVacationUnlock(), bucketWeightsRouter);
+app.use("/api/vacations/:vacationId/users/:userId", requireVacationUnlock(), tripPrefsRouter);
+app.use("/api/vacations/:vacationId/places", requireVacationUnlock(), placesRouter);
 app.use("/api/vacations/:vacationId", requireVacationUnlock(), bucketsRouter);
 app.use("/api/vacations/:vacationId/ranking", requireVacationUnlock(), rankingRouter);
 app.use("/api/vacations/:vacationId/export", requireVacationUnlock(), exportRouter);

@@ -1,0 +1,143 @@
+<div class="page">
+  @if (loading()) {
+    <div class="center-fill">
+      <mat-spinner></mat-spinner>
+    </div>
+  } @else if (status() === 'draft') {
+    <header class="top-bar">
+      <button mat-icon-button [title]="'common.back' | translate" (click)="goToVacationSelect()">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <h1>{{ 'vacationPlaces.title' | translate: { vacation: vacationName() } }}</h1>
+      <span class="top-bar-spacer"></span>
+    </header>
+
+    <div class="content">
+      <p class="intro">{{ 'vacationPlaces.intro' | translate }}</p>
+
+      <div class="share-section">
+        <label class="share-label" for="places-share-link-input">{{ 'userSelect.shareLabel' | translate }}</label>
+        <div class="share-row">
+          <input
+            id="places-share-link-input"
+            type="text"
+            class="share-input"
+            [value]="shareUrl"
+            readonly
+            (click)="$any($event.target).select()"
+          />
+          <button mat-icon-button class="copy-btn" [title]="'userSelect.copyTitle' | translate" (click)="copyShareLink()">
+            <mat-icon>{{ copied() ? 'check' : 'content_copy' }}</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      @if (errorMessage()) {
+        <p class="error">{{ errorMessage() }}</p>
+      }
+
+      <mat-card class="places-card">
+        <ul class="place-list">
+          @for (place of places(); track place.id) {
+            <li class="place-row">
+              @if (editingPlaceId() === place.id) {
+                <input
+                  class="edit-input"
+                  [(ngModel)]="editingName"
+                  maxlength="100"
+                  (keyup.enter)="saveEdit(place)"
+                  (keyup.escape)="cancelEdit()"
+                  autofocus
+                />
+                <button mat-icon-button [disabled]="savingEdit()" (click)="saveEdit(place)" [title]="'common.continue' | translate">
+                  <mat-icon>check</mat-icon>
+                </button>
+                <button mat-icon-button (click)="cancelEdit()" [title]="'common.cancel' | translate">
+                  <mat-icon>close</mat-icon>
+                </button>
+              } @else {
+                <span class="place-name">{{ place.name }}</span>
+                <button mat-icon-button (click)="startEdit(place)" [title]="'vacationPlaces.editAction' | translate">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button (click)="deletePlace(place)" [title]="'vacationPlaces.deleteAction' | translate">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              }
+            </li>
+          } @empty {
+            <li class="no-places">{{ 'vacationPlaces.noPlaces' | translate }}</li>
+          }
+        </ul>
+
+        <div class="add-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>{{ 'vacationPlaces.addLabel' | translate }}</mat-label>
+            <textarea matInput rows="3" [(ngModel)]="addText" [placeholder]="addPlaceholder()"></textarea>
+          </mat-form-field>
+          <button mat-stroked-button [disabled]="!addText.trim() || adding()" (click)="addPlaces()">
+            {{ (adding() ? 'vacationPlaces.addingButton' : 'vacationPlaces.addButton') | translate }}
+          </button>
+        </div>
+      </mat-card>
+
+      <mat-card class="prefs-card">
+        <h2>{{ 'vacationPlaces.prefsTitle' | translate }}</h2>
+        <p class="prefs-note">{{ 'vacationPlaces.prefsNote' | translate }}</p>
+        <div class="prefs-row">
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'vacationCreate.activeHoursLabel' | translate }}</mat-label>
+            <input matInput type="number" min="1" max="24" [(ngModel)]="activeHoursPerDay" (change)="saveTripPrefs()" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'vacationCreate.travelTimeLabel' | translate }}</mat-label>
+            <input matInput type="number" min="0" step="0.05" [(ngModel)]="avgTravelTimeHours" (change)="saveTripPrefs()" />
+          </mat-form-field>
+        </div>
+      </mat-card>
+
+      <button mat-flat-button color="primary" class="start-btn" [disabled]="!canStartRanking" (click)="openStartDialog()">
+        {{ 'vacationPlaces.startRankingButton' | translate }}
+      </button>
+      @if (places().length < 2) {
+        <p class="hint">{{ 'vacationPlaces.needTwoPlaces' | translate }}</p>
+      }
+    </div>
+
+    @if (showStartDialog()) {
+      <div class="overlay" (click)="cancelStartDialog()">
+        <mat-card class="dialog" (click)="$event.stopPropagation()">
+          <h2>{{ 'vacationPlaces.confirmTitle' | translate }}</h2>
+          <p class="warning">{{ 'vacationPlaces.confirmWarning' | translate }}</p>
+          <div class="actions">
+            <button mat-button (click)="cancelStartDialog()">{{ 'common.cancel' | translate }}</button>
+            <button mat-raised-button color="primary" [disabled]="startingRanking()" (click)="confirmStartRanking()">
+              {{ (startingRanking() ? 'vacationPlaces.startingButton' : 'common.continue') | translate }}
+            </button>
+          </div>
+        </mat-card>
+      </div>
+    }
+  } @else if (status() === 'creating') {
+    <div class="page-center">
+      <mat-card class="progress-card">
+        <h1>{{ 'vacationCreate.preparingTitle' | translate: { name: vacationName() } }}</h1>
+        <p>
+          {{
+            'vacationCreate.researchingProgress'
+              | translate: { processed: vacation()?.places_processed ?? 0, total: vacation()?.places_total ?? 0 }
+          }}
+        </p>
+        <mat-progress-bar mode="determinate" [value]="progressPercent"></mat-progress-bar>
+        <p class="eta">{{ etaLabel }}</p>
+      </mat-card>
+    </div>
+  } @else if (status() === 'failed') {
+    <div class="page-center">
+      <mat-card class="progress-card">
+        <h1>{{ 'vacationCreate.processingFailed' | translate }}</h1>
+        <button mat-button (click)="goToVacationSelect()">{{ 'common.back' | translate }}</button>
+      </mat-card>
+    </div>
+  }
+</div>
